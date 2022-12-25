@@ -1,0 +1,25 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+tzlocal = "*"
+numpy = "*"
+pandas = "*"
+sqlalchemy = "*"
+sqlalchemy-utils = "*"
+psycopg2-binary = "*"
+psycopg2-utils = "*"
+yahoo-finance-async = "*"
+yfinance = "*"
+yahoo-fin = "*"
+pyfinviz = "*"
+plotly = "*"
+pdfkit = "*"
+imgkit = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"

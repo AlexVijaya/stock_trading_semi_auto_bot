@@ -3,7 +3,7 @@ import time
 import os
 import pandas as pd
 import datetime
-
+import math
 from pathlib import Path
 import traceback
 import plotly.graph_objects as go
@@ -596,13 +596,35 @@ def plot_ohlcv_chart_with_levels_formed_by_rebound_off_ath (name_of_folder_where
                 stop_loss = ath + (advanced_atr * 0.05)
                 calculated_backlash_from_advanced_atr = advanced_atr * 0.05
                 sell_limit = ath - (advanced_atr * 0.5)
-                take_profit = sell_limit - (advanced_atr * 0.5) * 3
+                take_profit_3_to_1 = sell_limit - (advanced_atr * 0.5) * 3
+                take_profit_4_to_1 = sell_limit - (advanced_atr * 0.5) * 4
+
+                stop_loss = round(stop_loss,3)
+                calculated_backlash_from_advanced_atr =  round(calculated_backlash_from_advanced_atr,3)
+                sell_limit =  round(sell_limit,3)
+                take_profit_3_to_1 =  round(take_profit_3_to_1,3)
+                take_profit_4_to_1 = round ( take_profit_4_to_1 , 3 )
+                open_of_tvx = round ( open_of_tvx , 3 )
+                advanced_atr = round ( advanced_atr , 3 )
+                high_of_bsu = round ( high_of_bsu , 3 )
+                high_of_bpu1 = round ( high_of_bpu1 , 3 )
+                high_of_bpu2 = round ( high_of_bpu2 , 3 )
+                close_of_bpu2 = round ( close_of_bpu2 , 3 )
+
+                deposit_in_dollars = 1000
+                risk_percentage = 0.01
+                risk_in_dollars = deposit_in_dollars * risk_percentage
+                position_size = risk_in_dollars / (stop_loss-sell_limit )
+                position_size=math.floor(position_size)
+
+
 
                 fig.add_hline ( y = stop_loss , row = 2 , col = 1 , line_color = "magenta" )
                 fig.add_hline ( y = ath - calculated_backlash_from_advanced_atr ,
-                                row = 2 , col = 1 , line_color = "magenta" )
+                                row = 2 , col = 1 , line_color = "magenta", line_dash="dash" )
                 fig.add_hline ( y = sell_limit , row = 2 , col = 1 , line_color = "magenta" )
-                fig.add_hline ( y = take_profit , row = 2 , col = 1 , line_color = "magenta" )
+                fig.add_hline ( y = take_profit_3_to_1 , row = 2 , col = 1 , line_color = "magenta" )
+                fig.add_hline ( y = take_profit_4_to_1 , row = 2 , col = 1 , line_color = "magenta" )
 
                 # fig.update_xaxes ( patch = dict ( type = 'category' ) , row = 1 , col = 1 )
 
@@ -616,21 +638,26 @@ def plot_ohlcv_chart_with_levels_formed_by_rebound_off_ath (name_of_folder_where
                     fig.add_annotation ( text =
                                          f" | high_of_bsu={high_of_bsu}" 
                                          f" | high_of_bpu1={high_of_bpu1}"
-                                         f" | high_of_bpu2={high_of_bpu2}" + "<br>"
-                                         f" | high_of_bsu_more_decimals={true_high_of_bsu}"
-                                         f" | high_of_bpu1_more_decimals={true_high_of_bpu1}"
-                                         f" | high_of_bpu2_more_decimals={true_high_of_bpu2}"+"<br>"
+                                         f" | high_of_bpu2={high_of_bpu2}" 
+                                         # f" | high_of_bsu_more_decimals={true_high_of_bsu}"
+                                         # f" | high_of_bpu1_more_decimals={true_high_of_bpu1}"
+                                         # f" | high_of_bpu2_more_decimals={true_high_of_bpu2}"
                                          f" | close_of_bpu2={close_of_bpu2}"
-                                         f" | open_of_tvx={open_of_tvx}"
+                                         f" | open_of_tvx={open_of_tvx}"+"<br>"
                                          f" | volume_of_bsu={int(volume_of_bsu)}"
                                          f" | volume_of_bpu1={int(volume_of_bpu1)}"
-                                         f" | volume_of_bpu2={int(volume_of_bpu2)}"+"<br>"
-                                         f" | atr({atr_over_this_period})={atr}"
-                                         f" | advanced_atr({advanced_atr_over_this_period})={advanced_atr}"
+                                         f" | volume_of_bpu2={int(volume_of_bpu2)}"
+                                         # f" | atr({atr_over_this_period})={atr}"
+                                         f" | advanced_atr({advanced_atr_over_this_period})={advanced_atr}"+"<br>"
                                          f" | backlash (luft)={calculated_backlash_from_advanced_atr}"
                                          f" | stop_loss={stop_loss}"
                                          f" | sell_limit={sell_limit}"
-                                         f" | take_profit={take_profit}",
+                                         f" | take_profit_3_to_1={take_profit_3_to_1}"
+                                         f" | take_profit_4_to_1={take_profit_4_to_1}"
+                                         f" | deposit={deposit_in_dollars} $"
+                                         f" | risk={int(risk_in_dollars)} $"
+                                         f" | position_size={position_size} shares"
+                                         ,
                                          xref = "x domain" , yref = "y domain" ,
                                          font = dict (
                                              family = "Courier New, monospace" ,
