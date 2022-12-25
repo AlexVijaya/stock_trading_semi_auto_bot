@@ -84,6 +84,35 @@ def connect_to_postres_db_without_deleting_it_first(database ):
     return engine , connection
 
 
+def convert_unix_timestamp_into_acceptable_date_for_plotting(unix_timestamp):
+    date_time_object=dt.datetime.fromtimestamp ( unix_timestamp )
+    date_time_string=date_time_object.strftime ( "%Y-%m-%d %H:%M:%S" )
+    timestamp = datetime.strptime ( date_time_string , "%Y-%m-%d %H:%M:%S" )
+    return timestamp
+
+def get_list_of_excluded_dates(data_df):
+    first_unix_timestamp_in_data_df=data_df['Timestamp'].iat[0]
+    last_unix_timestamp_in_data_df = data_df['Timestamp'].iat[-1]
+    first_timestamp_in_data_df=\
+        convert_unix_timestamp_into_acceptable_date_for_plotting(first_unix_timestamp_in_data_df)
+    last_timestamp_in_data_df = \
+        convert_unix_timestamp_into_acceptable_date_for_plotting ( last_unix_timestamp_in_data_df )
+    dt_all = pd.date_range ( start = first_timestamp_in_data_df , end = last_timestamp_in_data_df )
+    dt_all=dt_all.to_pydatetime()
+    print("dt_all")
+    print ( dt_all )
+    list_of_dates_in_data_df=\
+        [convert_unix_timestamp_into_acceptable_date_for_plotting(unixtimestamp) for unixtimestamp in data_df.loc[:,"Timestamp"]]
+    print ( "list_of_dates_in_data_df" )
+    print ( list_of_dates_in_data_df )
+    list_of_excluded_dates=[]
+    for datetime in dt_all:
+        if datetime not in list_of_dates_in_data_df:
+            list_of_excluded_dates.append(datetime)
+    return list_of_excluded_dates
+
+
+
 
 
 
@@ -444,6 +473,15 @@ def plot_ohlcv_chart_with_levels_formed_by_rebound_off_ath (name_of_folder_where
                 except Exception as e:
                     print ( "error" , e )
                     traceback.print_exc ()
+
+                # plot without gaps for weekends
+                list_of_excluded_dates = \
+                    get_list_of_excluded_dates ( data_df_slice_drop_head_than_tail )
+                fig.update_xaxes ( rangebreaks = [dict ( values = list_of_excluded_dates )] , row = 2 , col = 1 )
+                # plot without gaps for weekends
+                list_of_excluded_dates = \
+                    get_list_of_excluded_dates ( data_df )
+                fig.update_xaxes ( rangebreaks = [dict ( values = list_of_excluded_dates )] , row = 1 , col = 1 )
 
                 #############################################################
 
