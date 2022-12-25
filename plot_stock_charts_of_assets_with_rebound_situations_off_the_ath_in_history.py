@@ -655,9 +655,14 @@ def plot_ohlcv_chart_with_levels_formed_by_rebound_off_ath (name_of_folder_where
                 position_size = risk_in_dollars / (stop_loss-sell_limit )
                 position_size=math.floor(position_size)
 
+                eight_stop_losses_from_level=ath-8*(stop_loss-sell_limit)
+
 
 
                 fig.add_hline ( y = stop_loss , row = 2 , col = 1 , line_color = "magenta" )
+                fig.add_hline ( y = eight_stop_losses_from_level , row = 2 , col = 1 , line_color = "black",line_dash='dash' )
+                fig.add_hline ( y = eight_stop_losses_from_level , row = 1 , col = 1 , line_color = "black" ,
+                                line_dash = 'dash' )
                 fig.add_hline ( y = ath - calculated_backlash_from_advanced_atr ,
                                 row = 2 , col = 1 , line_color = "magenta", line_dash="dash" )
                 fig.add_hline ( y = sell_limit , row = 2 , col = 1 , line_color = "magenta" )
