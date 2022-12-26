@@ -99,12 +99,12 @@ def get_list_of_excluded_dates(data_df):
         convert_unix_timestamp_into_acceptable_date_for_plotting ( last_unix_timestamp_in_data_df )
     dt_all = pd.date_range ( start = first_timestamp_in_data_df , end = last_timestamp_in_data_df )
     dt_all=dt_all.to_pydatetime()
-    print("dt_all")
-    print ( dt_all )
+    # print("dt_all")
+    # print ( dt_all )
     list_of_dates_in_data_df=\
         [convert_unix_timestamp_into_acceptable_date_for_plotting(unixtimestamp) for unixtimestamp in data_df.loc[:,"Timestamp"]]
-    print ( "list_of_dates_in_data_df" )
-    print ( list_of_dates_in_data_df )
+    # print ( "list_of_dates_in_data_df" )
+    # print ( list_of_dates_in_data_df )
     list_of_excluded_dates=[]
     for datetime in dt_all:
         if datetime not in list_of_dates_in_data_df:

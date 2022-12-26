@@ -18,6 +18,7 @@ pyfinviz = "*"
 plotly = "*"
 pdfkit = "*"
 imgkit = "*"
+wkhtmltopdf = "*"
 
 [dev-packages]
 

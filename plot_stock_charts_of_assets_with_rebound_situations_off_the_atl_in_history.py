@@ -67,12 +67,12 @@ def get_list_of_excluded_dates(data_df):
         convert_unix_timestamp_into_acceptable_date_for_plotting ( last_unix_timestamp_in_data_df )
     dt_all = pd.date_range ( start = first_timestamp_in_data_df , end = last_timestamp_in_data_df )
     dt_all=dt_all.to_pydatetime()
-    print("dt_all")
-    print ( dt_all )
+    # print("dt_all")
+    # print ( dt_all )
     list_of_dates_in_data_df=\
         [convert_unix_timestamp_into_acceptable_date_for_plotting(unixtimestamp) for unixtimestamp in data_df.loc[:,"Timestamp"]]
-    print ( "list_of_dates_in_data_df" )
-    print ( list_of_dates_in_data_df )
+    # print ( "list_of_dates_in_data_df" )
+    # print ( list_of_dates_in_data_df )
     list_of_excluded_dates=[]
     for datetime in dt_all:
         if datetime not in list_of_dates_in_data_df:
@@ -737,8 +737,16 @@ def plot_ohlcv_chart_with_levels_formed_by_rebound_off_atl (name_of_folder_where
 
                 fig.write_html ( where_to_plot_html )
 
+
                 # convert html to svg
-                imgkit.from_file ( where_to_plot_html , where_to_plot_svg )
+
+                # path_to_wkhtmltoimage=r"/usr/local/bin/wkhtmltoimage"
+                # path_to_wkhtmltopdf = r"/usr/local/bin/wkhtmltoipdf"
+                # # cfg=imgkit.config(wkhtmltoimage=path_to_wkhtmltoimage)
+                # options = {
+                #     "disable-local-file-access":""
+                # }
+                imgkit.from_file ( where_to_plot_html , where_to_plot_svg)
                 # convert html to png
 
                 # imgkit.from_file ( where_to_plot_html ,

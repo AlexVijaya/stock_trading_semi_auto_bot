@@ -924,7 +924,7 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                         if (backlash<=atr*acceptable_backlash) and (all_time_high-high_of_bpu2)>=0:
                             list_of_tickers_where_ath_is_also_limit_level.append ( stock_name )
 
-                            list_of_tickers_where_atl_is_also_limit_level.append ( stock_name )
+                            # list_of_tickers_where_atl_is_also_limit_level.append ( stock_name )
                             df_with_level_atr_bpu_bsu_etc = pd.DataFrame ()
                             df_with_level_atr_bpu_bsu_etc.loc[0 , "ticker"] = stock_name
                             df_with_level_atr_bpu_bsu_etc.loc[0 , "exchange"] = exchange
