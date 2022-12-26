@@ -150,7 +150,7 @@ def join_all_tables_in_postgres_db_into_one(database_name:str):
     pass
 if __name__=="__main__":
     start_time = time.time ()
-    database_name="stock_info"
+    database_name="stocks_info"
     join_all_tables_in_postgres_db_into_one(database_name = database_name )
     end_time = time.time ()
     overall_time = end_time - start_time
