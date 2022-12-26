@@ -551,7 +551,7 @@ def calculate_number_of_bars_which_fulfil_suppression_criterion_to_atl(first_sev
 
 
 
-def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is_stored,
+def search_for_tickers_with_fast_breakout_situations(db_where_ohlcv_data_for_stocks_is_stored,
                                           db_where_levels_formed_by_rebound_level_will_be,
                                                table_where_ticker_which_may_have_fast_breakout_situations_from_ath_will_be ,
                                                table_where_ticker_which_may_have_fast_breakout_situations_from_atl_will_be,
@@ -858,7 +858,7 @@ if __name__=="__main__":
     acceptable_backlash=0.05
     atr_over_this_period=5
     advanced_atr_over_this_period=30
-    search_for_tickers_with_rebound_situations(
+    search_for_tickers_with_fast_breakout_situations(
                                               db_where_ohlcv_data_for_stocks_is_stored,
                                               db_where_levels_formed_by_rebound_level_will_be,
                                               table_where_ticker_which_may_have_fast_breakout_situations_from_ath_will_be,
