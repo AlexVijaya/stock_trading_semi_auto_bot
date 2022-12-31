@@ -6,10 +6,12 @@ import fetch_list_of_stock_names
 import time
 import datetime
 import db_config
+from sqlalchemy import inspect
 import yfinance as yf
 import fetch_stock_names_from_finviz_with_given_filters
 from sqlalchemy import create_engine
 from sqlalchemy_utils import create_database,database_exists
+import datetime as dt
 
 def connect_to_postres_db_without_deleting_it_first(database:str):
     dialect = db_config.dialect
@@ -22,7 +24,7 @@ def connect_to_postres_db_without_deleting_it_first(database:str):
     dummy_database = db_config.dummy_database
 
     engine = create_engine ( f"{dialect}+{driver}://{user}:{password}@{host}:{port}/{database}" ,
-                             isolation_level = 'AUTOCOMMIT' , echo = True )
+                             isolation_level = 'AUTOCOMMIT' , echo = False )
     print ( f"{engine} created successfully" )
 
     # Create database if it does not exist.
@@ -90,20 +92,69 @@ def connect_to_postres_db_with_deleting_it_first(database):
             f' So no new db was created' )
     return engine , connection
 
+def get_date_without_time_from_timestamp(timestamp):
+    open_time = \
+        dt.datetime.fromtimestamp ( timestamp  )
+    # last_timestamp = historical_data_for_stock_ticker_df["Timestamp"].iloc[-1]
+    # last_date_with_time = historical_data_for_stock_ticker_df["open_time"].iloc[-1]
+    # print ( "type(last_date_with_time)\n" , type ( last_date_with_time ) )
+    # print ( "last_date_with_time\n" , last_date_with_time )
+    date_with_time = open_time.strftime ( "%Y/%m/%d %H:%M:%S" )
+    date_without_time = date_with_time.split ( " " )
+    print ( "date_with_time\n" , date_without_time[0] )
+    date_without_time = date_without_time[0]
+    print ( "date_without_time\n" , date_without_time )
+    return date_without_time
 
+def get_last_timestamp_from_ohlcv_table(ohlcv_data_df):
+    last_timestamp=ohlcv_data_df["Timestamp"].iat[-1]
+    return last_timestamp
 
+def timeit(func):
+    """
+    Decorator for measuring function's running time.
+    """
+    def measure_time(*args, **kw):
+        start_time = time.time()
+        result = func(*args, **kw)
+        print("Processing time of %s(): %.2f seconds."
+              % (func.__qualname__, time.time() - start_time))
+        return result
 
-def fetch_ohlcv_data_for_stocks(list_of_stock_names,
-                                database_where_ohlcv_for_stocks_will_be):
+    return measure_time
+
+def get_list_of_tables_in_db(engine_for_ohlcv_data_for_stocks):
+    '''get list of all tables in db engine for which is given as parameter'''
+    inspector=inspect(engine_for_ohlcv_data_for_stocks)
+    list_of_tables_in_db=inspector.get_table_names()
+
+    return list_of_tables_in_db
+
+def get_list_of_tables_in_db_with_db_as_parameter(database_where_ohlcv_for_stocks_is):
+    '''get list of all tables in db which is given as parameter'''
+    engine_for_ohlcv_data_for_stocks,connection_to_ohlcv_data_for_stocks=\
+        connect_to_postres_db_without_deleting_it_first(database_where_ohlcv_for_stocks_is)
+    
+    inspector=inspect(engine_for_ohlcv_data_for_stocks)
+    list_of_tables_in_db=inspector.get_table_names()
+
+    return list_of_tables_in_db
+
+def get_number_of_last_index(ohlcv_data_df):
+    number_of_last_index=ohlcv_data_df["index"].max()
+    return number_of_last_index
+def update_ohlcv_data_for_stocks(list_of_stock_names,
+                                database_where_ohlcv_for_stocks_is):
     engine_for_ohlcv_tables , connection_to_ohlcv_for_usdt_pairs = \
-        connect_to_postres_db_with_deleting_it_first ( database_where_ohlcv_for_stocks_will_be)
+        connect_to_postres_db_without_deleting_it_first ( database_where_ohlcv_for_stocks_is)
 
     engine_for_stock_info , connection_to_stock_info = \
         connect_to_postres_db_without_deleting_it_first ( "joint_table_of_all_stock_info_db" )
     stock_info_df = pd.read_sql_table ( "joint_table_of_all_stock_info" ,
                                         engine_for_stock_info )
     for number_of_stock,stock_name in enumerate(list_of_stock_names):
-        ohlcv_data_df=pd.DataFrame()
+        print("-"*80)
+        ohlcv_data_several_last_rows_df=pd.DataFrame()
         # print("stock_info_df")
         # print(stock_info_df)
         exchange = "not_known"
@@ -133,44 +184,110 @@ def fetch_ohlcv_data_for_stocks(list_of_stock_names,
             traceback.print_exc()
 
         try:
-            ohlcv_data_df=si.get_data(stock_name,start_date = "01/01/1970")
+
 
             #ticker=yf.Ticker(stock_name)
             #exchange=ticker['exchange']
             #print("ticker.info.exchange=",ticker.info["exchange"])
-            #ohlcv_data_df["exchange"]=ticker.info["exchange"]
-            # ohlcv_data_df['trading_pair'] = ohlcv_data_df["ticker"]
-            ohlcv_data_df['Timestamp'] = \
-                [datetime.datetime.timestamp ( x ) for x in ohlcv_data_df.index]
-            ohlcv_data_df["open_time"] = ohlcv_data_df.index
-            ohlcv_data_df.index=range(0,len(ohlcv_data_df))
-            # ohlcv_data_df = populate_dataframe_with_td_indicator ( ohlcv_data_df )
-
-            ohlcv_data_df["exchange"] = exchange
-            ohlcv_data_df["short_name"] = short_name
-            ohlcv_data_df["country"] = country
-            ohlcv_data_df["long_name"] = long_name
-            ohlcv_data_df["sector"] = sector
-            # ohlcv_data_df["long_business_summary"] = long_business_summary
-            ohlcv_data_df["website"] = website
-            ohlcv_data_df["quote_type"] = quote_type
-            ohlcv_data_df["city"] = city
-            ohlcv_data_df["exchange_timezone_name"] = exchange_timezone_name
-            ohlcv_data_df["industry"] = industry
-            ohlcv_data_df["market_cap"] = market_cap
+            #ohlcv_data_several_last_rows_df["exchange"]=ticker.info["exchange"]
+            # ohlcv_data_several_last_rows_df['trading_pair'] = ohlcv_data_several_last_rows_df["ticker"]
 
 
-            ohlcv_data_df.set_index("open_time")
 
-            ohlcv_data_df.to_sql ( f"{stock_name}" ,
-                             engine_for_ohlcv_tables ,
-                             if_exists = 'replace' )
+            # ohlcv_data_several_last_rows_df = populate_dataframe_with_td_indicator ( ohlcv_data_several_last_rows_df )
+
+
+
+
+
+
+            ohlcv_data_df = pd.read_sql_table(f"{stock_name}",
+                                              engine_for_ohlcv_tables)
+            if len(ohlcv_data_df)==0:
+                ohlcv_data_df = si.get_data(stock_name, start_date="01/01/1970")
+
+            
+            last_timestamp=get_last_timestamp_from_ohlcv_table(ohlcv_data_df)
+            print("ohlcv_data_df")
+            print(ohlcv_data_df.tail(5).to_string())
+
+            date_without_time=get_date_without_time_from_timestamp(last_timestamp)
+            number_of_last_index_in_ohlcv_data_df=get_number_of_last_index(ohlcv_data_df)
+            print("date_without_time")
+            print(date_without_time)
+            ohlcv_data_several_last_rows_df = si.get_data(stock_name, start_date=date_without_time)
+            # print("ohlcv_data_several_last_rows_df")
+            # print(ohlcv_data_several_last_rows_df)
+
+            ohlcv_data_several_last_rows_df['Timestamp'] = \
+                [datetime.datetime.timestamp(x) for x in ohlcv_data_several_last_rows_df.index]
+            ohlcv_data_several_last_rows_df["open_time"] = ohlcv_data_several_last_rows_df.index
+            # ohlcv_data_several_last_rows_df.set_index("open_time")
+            ohlcv_data_several_last_rows_df.index = \
+                range(number_of_last_index_in_ohlcv_data_df+1, number_of_last_index_in_ohlcv_data_df+1+len(ohlcv_data_several_last_rows_df))
+
+            ohlcv_data_several_last_rows_df["exchange"] = exchange
+            ohlcv_data_several_last_rows_df["short_name"] = short_name
+            ohlcv_data_several_last_rows_df["country"] = country
+            ohlcv_data_several_last_rows_df["long_name"] = long_name
+            ohlcv_data_several_last_rows_df["sector"] = sector
+            # ohlcv_data_several_last_rows_df["long_business_summary"] = long_business_summary
+            ohlcv_data_several_last_rows_df["website"] = website
+            ohlcv_data_several_last_rows_df["quote_type"] = quote_type
+            ohlcv_data_several_last_rows_df["city"] = city
+            ohlcv_data_several_last_rows_df["exchange_timezone_name"] = exchange_timezone_name
+            ohlcv_data_several_last_rows_df["industry"] = industry
+            ohlcv_data_several_last_rows_df["market_cap"] = market_cap
+
+            print("ohlcv_data_several_last_rows_df")
+            print(ohlcv_data_several_last_rows_df.to_string())
+            print("len of ohlcv_data_several_last_rows_df")
+            print(len(ohlcv_data_several_last_rows_df))
+            print(f"{stock_name} is number {number_of_stock} out of {len(list_of_stock_names)}")
+            if len(ohlcv_data_several_last_rows_df) <= 1:
+                print("nothing_added")
+                continue
+
+            print("len of ohlcv_data_several_last_rows_df is more than 1")
+
+            try:
+                ohlcv_data_several_last_rows_df=ohlcv_data_several_last_rows_df.loc[1:,:]
+            except:
+                traceback.print_exc()
+
+            try:
+
+                # ohlcv_data_df_updated = pd.concat([ohlcv_data_df, ohlcv_data_several_last_rows_df])
+                # print("ohlcv_data_df_updated_2")
+                # print(ohlcv_data_df_updated)
+                # ohlcv_data_df_updated.drop(['index'], axis=1)
+                # print("ohlcv_data_df_updated_3")
+                # print(ohlcv_data_df_updated)
+                # ohlcv_data_df_updated["index"] = range(0, len(ohlcv_data_df_updated))
+                # ohlcv_data_df_updated.reset_index(inplace=True)
+                # print("ohlcv_data_df_updated_4")
+                # print(ohlcv_data_df_updated.tail(5).to_string())
+                # ohlcv_data_df_updated["level_0"]=ohlcv_data_df_updated["index"]
+                # #ohlcv_data_df_updated=ohlcv_data_df_updated.drop(['level_0'], axis=1)
+                # print("ohlcv_data_df_updated_5")
+                # print(ohlcv_data_df_updated)
+                #
+                # print("number of rows in ohlcv_data_df_updated")
+                # print(len(ohlcv_data_df_updated))
+
+                ohlcv_data_several_last_rows_df.to_sql(f"{stock_name}",
+                                                       engine_for_ohlcv_tables,
+                                                       if_exists='append')
+            except:
+                traceback.print_exc()
+
+
         except:
             traceback.print_exc()
-        print(f"{stock_name} is number {number_of_stock} out of {len(list_of_stock_names)}")
-        print(type(ohlcv_data_df))
-        print ( "ohlcv_data_df" )
-        print ( ohlcv_data_df.tail(5).to_string() )
+        print(f"{stock_name} is number {number_of_stock+1} out of {len(list_of_stock_names)-1}")
+        print(type(ohlcv_data_several_last_rows_df))
+        print ( "ohlcv_data_several_last_rows_df" )
+        print ( ohlcv_data_several_last_rows_df.tail(5).to_string() )
 
     connection_to_ohlcv_for_usdt_pairs.close()
 
@@ -227,12 +344,14 @@ def populate_dataframe_with_td_indicator(dataframe) -> DataFrame:
 if __name__=="__main__":
     start_time = time.time ()
     # list_of_stock_names=fetch_list_of_stock_names.fetch_list_of_stock_names()
-    database_where_ohlcv_for_stocks_will_be="stocks_ohlcv_daily"
-    list_of_stock_names = \
-        fetch_stock_names_from_finviz_with_given_filters. \
-            fetch_stock_info_df_from_finviz_which_satisfy_certain_options ()
-    fetch_ohlcv_data_for_stocks(list_of_stock_names,
-                                database_where_ohlcv_for_stocks_will_be)
+    database_where_ohlcv_for_stocks_is="stocks_ohlcv_daily"
+    # list_of_stock_names = \
+    #     fetch_stock_names_from_finviz_with_given_filters. \
+    #         fetch_stock_info_df_from_finviz_which_satisfy_certain_options ()
+    
+    list_of_stock_names=get_list_of_tables_in_db_with_db_as_parameter(database_where_ohlcv_for_stocks_is)
+    update_ohlcv_data_for_stocks(list_of_stock_names,
+                                database_where_ohlcv_for_stocks_is)
     end_time = time.time ()
     overall_time = end_time - start_time
     print ( 'overall time of the main program in minutes=' , overall_time / 60.0 )
