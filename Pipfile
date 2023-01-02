@@ -19,6 +19,7 @@ plotly = "*"
 pdfkit = "*"
 imgkit = "*"
 wkhtmltopdf = "*"
+pyqt5 = "*"
 
 [dev-packages]
 

@@ -625,14 +625,22 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
 
                     #get ohlcv of bsu, bpu1,bpu2, tvx from truncated high and low df
                     # get ohlcv of bpu2 from NOT truncated high and low df
-                    open_of_bpu2,high_of_bpu2,low_of_bpu2,close_of_bpu2 = \
-                        get_ohlc_of_bpu2 ( truncated_high_and_low_table_with_ohlcv_data_df ,
-                                           row_number_of_bpu1 )
+                    open_of_bpu2=high_of_bpu2=low_of_bpu2=close_of_bpu2=np.nan
+                    open_of_tvx=high_of_tvx=low_of_tvx=close_of_tvx=np.nan
+                    try:
+                        open_of_bpu2,high_of_bpu2,low_of_bpu2,close_of_bpu2 = \
+                            get_ohlc_of_bpu2 ( truncated_high_and_low_table_with_ohlcv_data_df ,
+                                               row_number_of_bpu1 )
+                    except:
+                        pass
 
                     # get ohlcv of tvx from NOT truncated high and low df
-                    open_of_tvx , high_of_tvx , low_of_tvx , close_of_tvx = \
-                        get_ohlc_of_tvx ( truncated_high_and_low_table_with_ohlcv_data_df ,
-                                          row_number_of_bpu1 )
+                    try:
+                        open_of_tvx , high_of_tvx , low_of_tvx , close_of_tvx = \
+                            get_ohlc_of_tvx ( truncated_high_and_low_table_with_ohlcv_data_df ,
+                                              row_number_of_bpu1 )
+                    except:
+                        pass
 
                     # if open_of_tvx==np.NaN:
                     #
