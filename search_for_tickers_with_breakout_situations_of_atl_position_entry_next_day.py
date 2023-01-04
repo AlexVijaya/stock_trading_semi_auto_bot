@@ -623,6 +623,8 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
 
 
 
+
+
             # truncated_high_and_low_table_with_ohlcv_data_df[["high","low"]]=table_with_ohlcv_data_df[["high","low"]].round(decimals=2)
             # print("truncated_high_and_low_table_with_ohlcv_data_df")
             # print ( truncated_high_and_low_table_with_ohlcv_data_df)
@@ -681,6 +683,8 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             row_of_last_atl_in_iteration_over_numpy_array = np.NaN
             row_of_last_ath_in_iteration_over_numpy_array = np.NaN
 
+
+
             for number_of_last_row_in_np_array_row_slice in range(1,number_of_rows_in_numpy_array):
                 first_several_rows_in_np_array_slice=\
                     table_with_ohlcv_data_df_slice_numpy_array[:number_of_last_row_in_np_array_row_slice,:]
@@ -691,6 +695,7 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
                 minInColumns = np.amin ( first_several_rows_in_np_array_slice , axis = 0 )
                 ath=maxInColumns[2]
                 atl=minInColumns[3]
+
 
                 mask_for_non_atl_values_exclusion =\
                     (first_several_rows_in_np_array_slice[: , 3] == atl)

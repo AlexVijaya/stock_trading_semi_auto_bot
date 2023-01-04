@@ -148,7 +148,7 @@ def get_date_with_and_without_time_from_timestamp(timestamp):
 
 # def get_high_of_bpu2(truncated_high_and_low_table_with_ohlcv_data_df,row_number_of_bpu1):
 #     # get high of bpu2
-#     high_of_bpu2=np.NaN
+#     high_of_bpu2=False
 #     try:
 #         if len ( truncated_high_and_low_table_with_ohlcv_data_df ) - 1 == row_number_of_bpu1:
 #             print ( "there is no bpu2" )
@@ -162,10 +162,10 @@ def get_date_with_and_without_time_from_timestamp(timestamp):
 
 def get_ohlc_of_bpu2(truncated_high_and_low_table_with_ohlcv_data_df,row_number_of_bpu1):
     # get ohlcv of bpu2
-    low_of_bpu2=np.NaN
-    high_of_bpu2 = np.NaN
-    open_of_bpu2 = np.NaN
-    close_of_bpu2 = np.NaN
+    low_of_bpu2=False
+    high_of_bpu2 = False
+    open_of_bpu2 = False
+    close_of_bpu2 = False
     try:
         if len ( truncated_high_and_low_table_with_ohlcv_data_df ) - 1 == row_number_of_bpu1:
             print ( "there is no bpu2" )
@@ -182,10 +182,10 @@ def get_ohlc_of_bpu2(truncated_high_and_low_table_with_ohlcv_data_df,row_number_
 
 def get_ohlc_of_tvx(truncated_high_and_low_table_with_ohlcv_data_df,
                                          row_number_of_bpu1):
-    low_of_tvx = np.NaN
-    high_of_tvx = np.NaN
-    open_of_tvx = np.NaN
-    close_of_tvx = np.NaN
+    low_of_tvx = False
+    high_of_tvx = False
+    open_of_tvx = False
+    close_of_tvx = False
     try:
         if len ( truncated_high_and_low_table_with_ohlcv_data_df ) - 2 == row_number_of_bpu1:
             print ( "there is no tvx" )
@@ -204,7 +204,7 @@ def get_ohlc_of_tvx(truncated_high_and_low_table_with_ohlcv_data_df,
 
 def get_timestamp_of_bpu2(truncated_high_and_low_table_with_ohlcv_data_df,row_number_of_bpu1):
     # get high of bpu2
-    timestamp_bpu2=np.NaN
+    timestamp_bpu2=False
     try:
         if len ( truncated_high_and_low_table_with_ohlcv_data_df ) - 1 == row_number_of_bpu1:
             print ( "there is no bpu2" )
@@ -218,7 +218,7 @@ def get_timestamp_of_bpu2(truncated_high_and_low_table_with_ohlcv_data_df,row_nu
 
 def get_volume_of_bpu2(truncated_high_and_low_table_with_ohlcv_data_df,row_number_of_bpu1):
     # get high of bpu2
-    volume_bpu2=np.NaN
+    volume_bpu2=False
     try:
         if len ( truncated_high_and_low_table_with_ohlcv_data_df ) - 1 == row_number_of_bpu1:
             print ( "there is no bpu2" )
@@ -313,7 +313,7 @@ def calculate_advanced_atr(atr_over_this_period,
 
 
 def trunc(num, digits):
-    if num!=np.NaN:
+    if num!=False:
         try:
             l = str(float(num)).split('.')
             digits = min(len(l[1]), digits)
@@ -321,12 +321,12 @@ def trunc(num, digits):
         except:
             traceback.print_exc()
     else:
-        return np.NaN
+        return False
 def check_if_bsu_bpu1_bpu2_do_not_open_into_atl_level (
         acceptable_backlash,atr,open_of_bsu , open_of_bpu1 , open_of_bpu2 ,
         high_of_bsu , high_of_bpu1 , high_of_bpu2 ,
         low_of_bsu , low_of_bpu1 , low_of_bpu2 ):
-    three_bars_do_not_open_into_level=np.NaN
+    three_bars_do_not_open_into_level=False
 
     luft_for_bsu=(high_of_bsu-low_of_bsu)*acceptable_backlash
     luft_for_bpu1 = (high_of_bpu1 - low_of_bpu1) * acceptable_backlash
@@ -359,7 +359,7 @@ def check_if_bsu_bpu1_bpu2_do_not_open_into_atl_level (
 def check_if_bsu_bpu1_bpu2_do_not_close_into_atl_level ( acceptable_backlash,atr,close_of_bsu , close_of_bpu1 , close_of_bpu2 ,
                                                                     high_of_bsu , high_of_bpu1 , high_of_bpu2 ,
                                                                     low_of_bsu , low_of_bpu1 , low_of_bpu2 ):
-    three_bars_do_not_close_into_level = np.NaN
+    three_bars_do_not_close_into_level = False
 
     luft_for_bsu = (high_of_bsu - low_of_bsu) * acceptable_backlash
     luft_for_bpu1 = (high_of_bpu1 - low_of_bpu1) * acceptable_backlash
@@ -392,7 +392,7 @@ def check_if_bsu_bpu1_bpu2_do_not_open_into_ath_level(
         acceptable_backlash , atr , open_of_bsu , open_of_bpu1 , open_of_bpu2 ,
         high_of_bsu , high_of_bpu1 , high_of_bpu2 ,
         low_of_bsu , low_of_bpu1 , low_of_bpu2):
-    three_bars_do_not_open_into_level = np.NaN
+    three_bars_do_not_open_into_level = False
 
     luft_for_bsu = (high_of_bsu - low_of_bsu) * acceptable_backlash
     luft_for_bpu1 = (high_of_bpu1 - low_of_bpu1) * acceptable_backlash
@@ -441,7 +441,7 @@ def check_if_bsu_bpu1_bpu2_do_not_close_into_ath_level(acceptable_backlash , atr
                                                        close_of_bpu2 ,
                                                        high_of_bsu , high_of_bpu1 , high_of_bpu2 ,
                                                        low_of_bsu , low_of_bpu1 , low_of_bpu2):
-    three_bars_do_not_close_into_level = np.NaN
+    three_bars_do_not_close_into_level = False
 
     luft_for_bsu = (high_of_bsu - low_of_bsu) * acceptable_backlash
     luft_for_bpu1 = (high_of_bpu1 - low_of_bpu1) * acceptable_backlash
@@ -500,8 +500,7 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
     list_with_tickers_ready_for_rebound_off_atl = []
 
     for stock_name in list_of_tables_in_ohlcv_db:
-        # if stock_name!="FLME":
-        #     continue
+
         try:
 
             counter=counter+1
@@ -629,8 +628,8 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
 
                 #get ohlcv of bsu, bpu1,bpu2, tvx from truncated high and low df
                 # get ohlcv of bpu2 from NOT truncated high and low df
-                open_of_bpu2=high_of_bpu2=low_of_bpu2=close_of_bpu2=np.nan
-                open_of_tvx=high_of_tvx=low_of_tvx=close_of_tvx=np.nan
+                open_of_bpu2=high_of_bpu2=low_of_bpu2=close_of_bpu2=False
+                open_of_tvx=high_of_tvx=low_of_tvx=close_of_tvx=False
                 try:
                     open_of_bpu2,high_of_bpu2,low_of_bpu2,close_of_bpu2 = \
                         get_ohlc_of_bpu2 ( truncated_high_and_low_table_with_ohlcv_data_df ,
@@ -646,7 +645,7 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                 # except:
                 #     pass
 
-                # if open_of_tvx==np.NaN:
+                # if open_of_tvx==False:
                 #
                 #     print ( "row_number_of_bpu1" )
                 #     print ( row_number_of_bpu1 )
@@ -997,7 +996,7 @@ if __name__=="__main__":
     db_where_ohlcv_data_for_stocks_is_stored="stocks_ohlcv_daily"
     count_only_round_rebound_level=False
     db_where_levels_formed_by_rebound_level_will_be="levels_formed_by_highs_and_lows_for_stocks"
-    table_where_ticker_which_had_rebound_situations_from_ath_will_be = "rebound_situations_from_ath"
+    table_where_ticker_which_had_rebound_situations_from_ath_will_be = "current_rebound_situations_from_ath"
     table_where_ticker_which_had_rebound_situations_from_atl_will_be = "current_rebound_situations_from_atl"
 
     if count_only_round_rebound_level:
