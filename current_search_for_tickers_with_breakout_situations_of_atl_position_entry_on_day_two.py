@@ -630,6 +630,9 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
                 pd.read_sql_query(f'''select * from "{stock_name}"''',
                                   engine_for_ohlcv_data_for_stocks)
 
+            if table_with_ohlcv_data_df.empty:
+                continue
+
             # print("table_with_ohlcv_data_df.index")
             # print(table_with_ohlcv_data_df.index)
             # print("list(table_with_ohlcv_data_df.columns)")

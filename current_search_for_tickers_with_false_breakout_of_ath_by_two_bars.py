@@ -573,10 +573,10 @@ def find_min_volume_over_last_n_days (
 
 
 
-def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_is_stored,
-                                          db_where_ticker_which_may_have_fast_breakout_situations,
-                                               table_where_ticker_which_may_have_fast_breakout_situations_from_ath_will_be ,
-                                               table_where_ticker_which_may_have_fast_breakout_situations_from_atl_will_be,
+def search_for_tickers_with_false_breakout_situations(db_where_ohlcv_data_for_stocks_is_stored,
+                                          db_where_ticker_which_may_have_fast_false_breakout_situations,
+                                               table_where_ticker_which_may_have_fast_false_breakout_situations_from_ath_will_be ,
+                                               table_where_ticker_which_may_have_fast_false_breakout_situations_from_atl_will_be,
                                                advanced_atr_over_this_period,
                                                 number_of_bars_in_suppression_to_check_for_volume_acceptance,
                                                 factor_to_multiply_atr_by_to_check_suppression,
@@ -588,14 +588,14 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
     connection_to_ohlcv_data_for_stocks = \
         connect_to_postres_db_without_deleting_it_first ( db_where_ohlcv_data_for_stocks_is_stored )
 
-    engine_for_db_where_ticker_which_may_have_fast_breakout_situations , \
-    connection_to_db_where_ticker_which_may_have_fast_breakout_situations = \
-        connect_to_postres_db_without_deleting_it_first ( db_where_ticker_which_may_have_fast_breakout_situations )
+    engine_for_db_where_ticker_which_may_have_fast_false_breakout_situations , \
+    connection_to_db_where_ticker_which_may_have_fast_false_breakout_situations = \
+        connect_to_postres_db_without_deleting_it_first ( db_where_ticker_which_may_have_fast_false_breakout_situations )
 
-    drop_table ( table_where_ticker_which_may_have_fast_breakout_situations_from_ath_will_be ,
-                 engine_for_db_where_ticker_which_may_have_fast_breakout_situations )
-    # drop_table ( table_where_ticker_which_may_have_fast_breakout_situations_from_atl_will_be ,
-    #              engine_for_db_where_ticker_which_may_have_fast_breakout_situations )
+    drop_table ( table_where_ticker_which_may_have_fast_false_breakout_situations_from_ath_will_be ,
+                 engine_for_db_where_ticker_which_may_have_fast_false_breakout_situations )
+    # drop_table ( table_where_ticker_which_may_have_fast_false_breakout_situations_from_atl_will_be ,
+    #              engine_for_db_where_ticker_which_may_have_fast_false_breakout_situations )
 
     list_of_tables_in_ohlcv_db=\
         get_list_of_tables_in_db ( engine_for_ohlcv_data_for_stocks )
@@ -619,13 +619,13 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
                 pd.read_sql_query ( f'''select * from "{stock_name}"''' ,
                                     engine_for_ohlcv_data_for_stocks )
 
-            if table_with_ohlcv_data_df.empty:
-                continue
-
             # print ("table_with_ohlcv_data_df.index")
             # print(table_with_ohlcv_data_df.index)
             # print("list(table_with_ohlcv_data_df.columns)")
             # print(list(table_with_ohlcv_data_df.columns))
+
+            if table_with_ohlcv_data_df.empty:
+                continue
 
             exchange = table_with_ohlcv_data_df.loc[0 , "exchange"]
             short_name = table_with_ohlcv_data_df.loc[0 , 'short_name']
@@ -639,7 +639,7 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
                 {'open': 6, 'high': 6, 'low': 6, 'close': 6, 'adjclose': 6})
 
             # Find row number of last row in last_five_years_of_data
-            false_breakout_bar_row_number = last_five_years_of_data.index[-1]
+            false_breakout_bar_row_number = last_five_years_of_data.index[-2]
 
             # Find Timestamp, open, high, low, close, volume of false_breakout_bar
             timestamp_of_false_breakout_bar = last_five_years_of_data.loc[
@@ -654,14 +654,21 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
                     pd.isna(low_of_false_breakout_bar) or pd.isna(high_of_false_breakout_bar):
                 continue
 
-            # Select all rows in last_five_years_of_data excluding the last row
-            last_five_years_of_data_but_one_last_day = last_five_years_of_data.iloc[:-1]
+            # Select all rows in last_five_years_of_data excluding the last 2 rows
+            last_five_years_of_data_but_two_last_days = last_five_years_of_data.iloc[:-2]
 
-            # Find row number of last row in last_five_years_of_data_but_one_last_day
-            pre_false_breakout_bar_row_number = last_five_years_of_data_but_one_last_day.index[-1]
+            # Find row number of last row in last_five_years_of_data_but_two_last_days
+            pre_false_breakout_bar_row_number = last_five_years_of_data_but_two_last_days.index[-1]
 
-            # Make a dataframe out of last row of last_five_years_of_data_but_one_last_day
-            pre_false_breakout_bar_df = last_five_years_of_data_but_one_last_day.iloc[[-1]]
+            # Make a dataframe out of last row of last_five_years_of_data_but_two_last_days
+            pre_false_breakout_bar_df = last_five_years_of_data_but_two_last_days.iloc[[-1]]
+
+            # Находим номер последнего бара в датафрэйме (следующий день после пробоя)
+            next_day_bar_after_break_out_bar_row_number = last_five_years_of_data.index[-1]
+
+            # Делаем слайс изначального датафрэйма, чтобы получить дф последнего бара в датафрэйме
+            # (следующий день после пробоя)
+            next_day_bar_after_break_out_bar_df = last_five_years_of_data.iloc[[-1]]
 
             # Find Timestamp, open, high, low, close, volume of pre_false_breakout_bar
             timestamp_of_pre_false_breakout_bar = pre_false_breakout_bar_df.loc[pre_false_breakout_bar_row_number, 'Timestamp']
@@ -671,25 +678,33 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             close_of_pre_false_breakout_bar = pre_false_breakout_bar_df.loc[pre_false_breakout_bar_row_number, 'close']
             volume_of_pre_false_breakout_bar = pre_false_breakout_bar_df.loc[pre_false_breakout_bar_row_number, 'volume']
 
+            # Find Timestamp, open, high, low, close, volume of bar after false_breakout bar
+            timestamp_of_next_day_bar_after_break_out_bar = next_day_bar_after_break_out_bar_df.loc[next_day_bar_after_break_out_bar_row_number, 'Timestamp']
+            open_of_next_day_bar_after_break_out_bar = next_day_bar_after_break_out_bar_df.loc[next_day_bar_after_break_out_bar_row_number, 'open']
+            high_of_next_day_bar_after_break_out_bar = next_day_bar_after_break_out_bar_df.loc[next_day_bar_after_break_out_bar_row_number, 'high']
+            low_of_next_day_bar_after_break_out_bar = next_day_bar_after_break_out_bar_df.loc[next_day_bar_after_break_out_bar_row_number, 'low']
+            close_of_next_day_bar_after_break_out_bar = next_day_bar_after_break_out_bar_df.loc[next_day_bar_after_break_out_bar_row_number, 'close']
+            volume_of_next_day_bar_after_break_out_bar = next_day_bar_after_break_out_bar_df.loc[next_day_bar_after_break_out_bar_row_number, 'volume']
+
             # print("table_with_ohlcv_data_df")
             # print(table_with_ohlcv_data_df.tail(10).to_string())
 
 
             # Print Timestamp, open, high, low, close, volume of false_breakout_bar
-            # print(f"Timestamp of candidate breakout bar: {timestamp_of_false_breakout_bar}")
-            # print(f"Open of candidate breakout bar: {open_of_false_breakout_bar}")
-            # print(f"High of candidate breakout bar: {high_of_false_breakout_bar}")
-            # print(f"Low of candidate breakout bar: {low_of_false_breakout_bar}")
-            # print(f"Close of candidate breakout bar: {close_of_false_breakout_bar}")
-            # print(f"Volume of candidate breakout bar: {volume_of_false_breakout_bar}")
+            # print(f"Timestamp of candidate false_breakout bar: {timestamp_of_false_breakout_bar}")
+            # print(f"Open of candidate false_breakout bar: {open_of_false_breakout_bar}")
+            # print(f"High of candidate false_breakout bar: {high_of_false_breakout_bar}")
+            # print(f"Low of candidate false_breakout bar: {low_of_false_breakout_bar}")
+            # print(f"Close of candidate false_breakout bar: {close_of_false_breakout_bar}")
+            # print(f"Volume of candidate false_breakout bar: {volume_of_false_breakout_bar}")
 
             # Print Timestamp, open, high, low, close, volume of pre_false_breakout_bar
-            # print(f"Timestamp of pre-breakout bar: {timestamp_of_pre_false_breakout_bar}")
-            # print(f"Open of pre-breakout bar: {open_of_pre_false_breakout_bar}")
-            # print(f"High of pre-breakout bar: {high_of_pre_false_breakout_bar}")
-            # print(f"Low of pre-breakout bar: {low_of_pre_false_breakout_bar}")
-            # print(f"Close of pre-breakout bar: {close_of_pre_false_breakout_bar}")
-            # print(f"Volume of pre-breakout bar: {volume_of_pre_false_breakout_bar}")
+            # print(f"Timestamp of pre-false_breakout bar: {timestamp_of_pre_false_breakout_bar}")
+            # print(f"Open of pre-false_breakout bar: {open_of_pre_false_breakout_bar}")
+            # print(f"High of pre-false_breakout bar: {high_of_pre_false_breakout_bar}")
+            # print(f"Low of pre-false_breakout bar: {low_of_pre_false_breakout_bar}")
+            # print(f"Close of pre-false_breakout bar: {close_of_pre_false_breakout_bar}")
+            # print(f"Volume of pre-false_breakout bar: {volume_of_pre_false_breakout_bar}")
 
             if last_five_years_of_data.tail(30)['volume'].min() < 75:
                 continue
@@ -699,40 +714,40 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
 
 
             # find all time high in last_five_years_of_data_but_one_last_day
-            all_time_high = last_five_years_of_data_but_one_last_day['high'].max()
+            all_time_high = last_five_years_of_data_but_two_last_days['high'].max()
             print(f"all_time_high: {all_time_high}")
 
             all_time_high_row_numbers =\
-                last_five_years_of_data_but_one_last_day[last_five_years_of_data_but_one_last_day['high'] == all_time_high].index
+                last_five_years_of_data_but_two_last_days[last_five_years_of_data_but_two_last_days['high'] == all_time_high].index
 
             last_all_time_high_row_number = all_time_high_row_numbers[-1]
 
             # Find timestamps of all_time_high rows and create list out of them
-            all_time_high_timestamps = last_five_years_of_data_but_one_last_day.loc[all_time_high_row_numbers][
+            all_time_high_timestamps = last_five_years_of_data_but_two_last_days.loc[all_time_high_row_numbers][
                 'Timestamp'].tolist()
 
-            timestamp_of_last_all_time_high = last_five_years_of_data_but_one_last_day.loc[
+            timestamp_of_last_all_time_high = last_five_years_of_data_but_two_last_days.loc[
                 last_all_time_high_row_number, 'Timestamp']
-            open_of_last_all_time_high = last_five_years_of_data_but_one_last_day.loc[
+            open_of_last_all_time_high = last_five_years_of_data_but_two_last_days.loc[
                 last_all_time_high_row_number, 'open']
-            high_of_last_all_time_high = last_five_years_of_data_but_one_last_day.loc[
+            high_of_last_all_time_high = last_five_years_of_data_but_two_last_days.loc[
                 last_all_time_high_row_number, 'high']
-            low_of_last_all_time_high = last_five_years_of_data_but_one_last_day.loc[
+            low_of_last_all_time_high = last_five_years_of_data_but_two_last_days.loc[
                 last_all_time_high_row_number, 'low']
-            close_of_last_all_time_high = last_five_years_of_data_but_one_last_day.loc[
+            close_of_last_all_time_high = last_five_years_of_data_but_two_last_days.loc[
                 last_all_time_high_row_number, 'close']
-            volume_of_last_all_time_high = last_five_years_of_data_but_one_last_day.loc[
+            volume_of_last_all_time_high = last_five_years_of_data_but_two_last_days.loc[
                 last_all_time_high_row_number, 'volume']
             print(f"1found_stock={stock_name}")
 
 
-
+            # проверяем, ближайший исторический максимум был не ближе, чем 3 дня до пробоя
             if false_breakout_bar_row_number - last_all_time_high_row_number < 3:
                 continue
 
             print(f"2found_stock={stock_name}")
 
-            if last_five_years_of_data_but_one_last_day.loc[
+            if last_five_years_of_data_but_two_last_days.loc[
                last_all_time_high_row_number + 1:,"high"].max() > all_time_high:
                 continue
 
@@ -748,19 +763,22 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
 
             print(f"5found_stock={stock_name}")
 
-            if close_of_false_breakout_bar >= all_time_high:
+            if close_of_false_breakout_bar <= all_time_high:
+                continue
+
+            if open_of_next_day_bar_after_break_out_bar >= all_time_high:
                 continue
 
             print(f"6found_stock={stock_name}")
 
-            if close_of_false_breakout_bar >= open_of_false_breakout_bar:
+            if close_of_next_day_bar_after_break_out_bar <= all_time_high:
                 continue
 
             print(f"7found_stock={stock_name}")
 
+            # #cмотрим поджатие
             # last_n_lows = list(last_five_years_of_data['low'].tail(3))
             # suppression_flag = True
-            #
             # for i in range(len(last_n_lows) - 1):
             #     if last_n_lows[i + 1] < last_n_lows[i]:
             #         suppression_flag = False
@@ -769,15 +787,21 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             #     continue
             # print(f"last_n_lows_for_{stock_name}")
             # print(last_n_lows)
-            #
-            # print(f"7found_stock={stock_name}")
 
-            last_five_years_of_data_but_one_last_day_array = last_five_years_of_data_but_one_last_day.to_numpy()
+            print(f"8found_stock={stock_name}")
+
+            last_five_years_of_data_but_two_last_days_array = last_five_years_of_data_but_two_last_days.to_numpy()
 
             advanced_atr=\
                 calculate_atr_without_paranormal_bars_from_numpy_array(atr_over_this_period,
-                                                                   last_five_years_of_data_but_one_last_day_array,
+                                                                   last_five_years_of_data_but_two_last_days_array,
                                                                    pre_false_breakout_bar_row_number)
+
+
+            if open_of_next_day_bar_after_break_out_bar>close_of_false_breakout_bar or\
+                close_of_next_day_bar_after_break_out_bar>open_of_false_breakout_bar or\
+                    low_of_next_day_bar_after_break_out_bar>low_of_false_breakout_bar:
+                continue
 
 
 
@@ -785,6 +809,7 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             # print(
             #     f"close_of_false_breakout_bar={close_of_false_breakout_bar}")
 
+            # check that first false breakout bar does not open and close into level
             distance_between_current_ath_and_false_breakout_bar_open = \
                 all_time_high - open_of_false_breakout_bar
             distance_between_current_ath_and_false_breakout_bar_close = \
@@ -793,6 +818,17 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
                 continue
             if not (distance_between_current_ath_and_false_breakout_bar_open > advanced_atr * 0.05) and \
                     (distance_between_current_ath_and_false_breakout_bar_close > advanced_atr * 0.05):
+                continue
+
+            # check that second false breakout bar does not open and close into level
+            distance_between_current_ath_and_next_day_bar_after_break_out_bar_open = \
+                all_time_high - open_of_next_day_bar_after_break_out_bar
+            distance_between_current_ath_and_next_day_bar_after_break_out_bar_close = \
+                close_of_next_day_bar_after_break_out_bar - all_time_high
+            if distance_between_current_ath_and_next_day_bar_after_break_out_bar_open == 0:
+                continue
+            if not (distance_between_current_ath_and_next_day_bar_after_break_out_bar_open > advanced_atr * 0.05) and \
+                    (distance_between_current_ath_and_next_day_bar_after_break_out_bar_close > advanced_atr * 0.05):
                 continue
 
 
@@ -805,6 +841,9 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
                 timestamp_of_pre_false_breakout_bar)
             date_and_time_of_false_breakout_bar, date_of_false_breakout_bar = get_date_with_and_without_time_from_timestamp(
                 timestamp_of_false_breakout_bar)
+            date_and_time_of_next_day_bar_after_break_out_bar, date_of_next_day_bar_after_break_out_bar =\
+                get_date_with_and_without_time_from_timestamp(
+                timestamp_of_next_day_bar_after_break_out_bar)
 
 
 
@@ -867,13 +906,29 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
                 0, "volume_of_false_breakout_bar"] = volume_of_false_breakout_bar
 
             df_with_level_atr_bpu_bsu_etc.loc[
+                0, "timestamp_of_next_day_bar_after_break_out_bar"] = timestamp_of_next_day_bar_after_break_out_bar
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "human_date_of_next_day_bar_after_break_out_bar"] = date_of_next_day_bar_after_break_out_bar
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "open_of_next_day_bar_after_break_out_bar"] = open_of_next_day_bar_after_break_out_bar
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "high_of_next_day_bar_after_break_out_bar"] = high_of_next_day_bar_after_break_out_bar
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "low_of_next_day_bar_after_break_out_bar"] = low_of_next_day_bar_after_break_out_bar
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "close_of_next_day_bar_after_break_out_bar"] = close_of_next_day_bar_after_break_out_bar
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "volume_of_next_day_bar_after_break_out_bar"] = volume_of_next_day_bar_after_break_out_bar
+
+
+            df_with_level_atr_bpu_bsu_etc.loc[
                 0, "min_volume_over_last_n_days"] =  last_five_years_of_data['volume'].tail(count_min_volume_over_this_many_days).min()
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "count_min_volume_over_this_many_days"] = count_min_volume_over_this_many_days
 
             df_with_level_atr_bpu_bsu_etc.to_sql(
-                table_where_ticker_which_may_have_fast_breakout_situations_from_ath_will_be,
-                engine_for_db_where_ticker_which_may_have_fast_breakout_situations,
+                table_where_ticker_which_may_have_fast_false_breakout_situations_from_ath_will_be,
+                engine_for_db_where_ticker_which_may_have_fast_false_breakout_situations,
                 if_exists='append')
 
         except:
@@ -885,19 +940,21 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
     print ( list_of_stocks_which_broke_atl )
 
 
+
+
 if __name__=="__main__":
     start_time=time.time ()
     db_where_ohlcv_data_for_stocks_is_stored="stocks_ohlcv_daily"
     count_only_round_rebound_level=False
-    db_where_ticker_which_may_have_fast_breakout_situations=\
+    db_where_ticker_which_may_have_fast_false_breakout_situations=\
         "levels_formed_by_highs_and_lows_for_stocks"
-    table_where_ticker_which_may_have_fast_breakout_situations_from_ath_will_be =\
-        "current_false_breakout_of_ath_by_one_bar"
-    table_where_ticker_which_may_have_fast_breakout_situations_from_atl_will_be =\
-        "current_false_breakout_of_atl_by_one_bar"
+    table_where_ticker_which_may_have_fast_false_breakout_situations_from_ath_will_be =\
+        "current_false_breakout_of_ath_by_two_bars"
+    table_where_ticker_which_may_have_fast_false_breakout_situations_from_atl_will_be =\
+        "current_false_breakout_of_atl_by_two_bars"
 
     if count_only_round_rebound_level:
-        db_where_ticker_which_may_have_fast_breakout_situations=\
+        db_where_ticker_which_may_have_fast_false_breakout_situations=\
             "round_levels_formed_by_highs_and_lows_for_stocks"
     #0.05 means 5%
     
@@ -906,11 +963,11 @@ if __name__=="__main__":
     number_of_bars_in_suppression_to_check_for_volume_acceptance=14
     factor_to_multiply_atr_by_to_check_suppression=1
     count_min_volume_over_this_many_days=30
-    search_for_tickers_with_breakout_situations(
+    search_for_tickers_with_false_breakout_situations(
                                               db_where_ohlcv_data_for_stocks_is_stored,
-                                              db_where_ticker_which_may_have_fast_breakout_situations,
-                                              table_where_ticker_which_may_have_fast_breakout_situations_from_ath_will_be,
-                                                table_where_ticker_which_may_have_fast_breakout_situations_from_atl_will_be,
+                                              db_where_ticker_which_may_have_fast_false_breakout_situations,
+                                              table_where_ticker_which_may_have_fast_false_breakout_situations_from_ath_will_be,
+                                                table_where_ticker_which_may_have_fast_false_breakout_situations_from_atl_will_be,
                                             advanced_atr_over_this_period,
                                             number_of_bars_in_suppression_to_check_for_volume_acceptance,
                                             factor_to_multiply_atr_by_to_check_suppression,count_min_volume_over_this_many_days)

@@ -507,14 +507,28 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
             print ( f'{stock_name} is'
                     f' number {counter} out of {len ( list_of_tables_in_ohlcv_db )}\n' )
 
+            # if stock_name!='MBI':
+            #     continue
+
 
 
             table_with_ohlcv_data_df = \
                 pd.read_sql_query ( f'''select * from "{stock_name}"''' ,
                                     engine_for_ohlcv_data_for_stocks )
 
+            if table_with_ohlcv_data_df.empty:
+                continue
+
+            # print("table_with_ohlcv_data_df")
+            # print(table_with_ohlcv_data_df)
+
             exchange = table_with_ohlcv_data_df.loc[0 , "exchange"]
             short_name = table_with_ohlcv_data_df.loc[0 , 'short_name']
+
+            print("exchange")
+            print(exchange)
+            print("short_name")
+            print(short_name)
 
 
 
@@ -550,8 +564,8 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
             truncated_high_and_low_table_with_ohlcv_data_df["close"] = \
                 table_with_ohlcv_data_df["close"].apply ( trunc , args = (6 ,) )
 
-            print('table_with_ohlcv_data_df.loc[0,"close"]')
-            print ( table_with_ohlcv_data_df.loc[0 , "close"] )
+            # print('table_with_ohlcv_data_df.loc[0,"close"]')
+            # print ( table_with_ohlcv_data_df.loc[0 , "close"] )
 
             # round high and low to two decimal number
 
@@ -611,8 +625,8 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                 # list_with_tickers_ready_for_rebound_off_atl.append(stock_name)
                 # print ( "ohlcv_df_with_low_equal_to_atl_slice" )
                 # print ( ohlcv_df_with_low_equal_to_atl_slice )
-                print ( "list_with_tickers_ready_for_rebound_off_atl" )
-                print ( list_with_tickers_ready_for_rebound_off_atl )
+                # print ( "list_with_tickers_ready_for_rebound_off_atl" )
+                # print ( list_with_tickers_ready_for_rebound_off_atl )
                 ohlcv_df_with_low_equal_to_atl_slice=\
                     ohlcv_df_with_low_equal_to_atl_slice.rename ( columns = {"index": "index_column"}  )
                 # print ( "ohlcv_df_with_high_equal_to_ath_slice" )
@@ -692,14 +706,14 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                 volume_of_bpu1 = table_with_ohlcv_data_df.loc[row_number_of_bpu1 , "volume"]
                 volume_of_bpu2=get_volume_of_bpu2 ( table_with_ohlcv_data_df , row_number_of_bpu1 )
 
-                atr = calculate_atr ( atr_over_this_period ,
-                                      table_with_ohlcv_data_df ,
-                                      row_number_of_bpu1 )
+                # atr = calculate_atr ( atr_over_this_period ,
+                #                       table_with_ohlcv_data_df ,
+                #                       row_number_of_bpu1 )
                 advanced_atr=calculate_advanced_atr ( advanced_atr_over_this_period ,
                                          table_with_ohlcv_data_df ,
                                          row_number_of_bpu1 )
 
-                atr = round ( atr , 6 )
+                # atr = round ( atr , 6 )
                 advanced_atr = round ( advanced_atr , 6 )
 
                 # print("true_low_of_bsu")
@@ -740,11 +754,11 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
 
 
                 asset_not_open_into_level_bool = \
-                    check_if_bsu_bpu1_bpu2_do_not_open_into_atl_level ( acceptable_backlash,atr,open_of_bsu , open_of_bpu1 , open_of_bpu2 ,
+                    check_if_bsu_bpu1_bpu2_do_not_open_into_atl_level ( acceptable_backlash,advanced_atr,open_of_bsu , open_of_bpu1 , open_of_bpu2 ,
                                                                     high_of_bsu , high_of_bpu1 , high_of_bpu2 ,
                                                                     low_of_bsu , low_of_bpu1 , low_of_bpu2 )
                 asset_not_close_into_level_bool = \
-                    check_if_bsu_bpu1_bpu2_do_not_close_into_atl_level ( acceptable_backlash,atr,close_of_bsu , close_of_bpu1 , close_of_bpu2 ,
+                    check_if_bsu_bpu1_bpu2_do_not_close_into_atl_level ( acceptable_backlash,advanced_atr,close_of_bsu , close_of_bpu1 , close_of_bpu2 ,
                                                                     high_of_bsu , high_of_bpu1 , high_of_bpu2 ,
                                                                     low_of_bsu , low_of_bpu1 , low_of_bpu2 )
 
@@ -765,7 +779,7 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "exchange"] = exchange
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "short_name"] = short_name
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "atl"] = all_time_low
-                        df_with_level_atr_bpu_bsu_etc.loc[0 , "atr"] = atr
+                        # df_with_level_atr_bpu_bsu_etc.loc[0 , "atr"] = atr
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "advanced_atr"] = advanced_atr
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "atr_over_this_period"] = atr_over_this_period
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "advanced_atr_over_this_period"] =\
@@ -976,8 +990,10 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
             #                 table_where_ticker_which_had_rebound_situations_from_ath_will_be ,
             #                 engine_for_db_where_levels_formed_by_rebound_level_will_be ,
             #                 if_exists = 'append' )
-        except:
+        except Exception as e:
             traceback.print_exc()
+            print(e,f'error in {stock_name}')
+
 
 
 

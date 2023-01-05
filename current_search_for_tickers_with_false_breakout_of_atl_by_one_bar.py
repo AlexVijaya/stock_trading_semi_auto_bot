@@ -622,6 +622,8 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             print(f'{stock_name} is'
                   f' number {counter} out of {len(list_of_tables_in_ohlcv_db)}\n')
 
+
+
             # if stock_name not in ['BBBY', 'LAZR', 'LCID', 'RIVN', 'XERS'] :
             #     continue
 
@@ -629,6 +631,9 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             table_with_ohlcv_data_df = \
                 pd.read_sql_query(f'''select * from "{stock_name}"''',
                                   engine_for_ohlcv_data_for_stocks)
+
+            if table_with_ohlcv_data_df.empty:
+                continue
 
             # print("table_with_ohlcv_data_df.index")
             # print(table_with_ohlcv_data_df.index)
