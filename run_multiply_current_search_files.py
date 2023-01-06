@@ -18,7 +18,9 @@ def run_multiple_search_current_rebound_breakout_false_breakout_situations():
              'current_search_for_tickers_with_false_breakout_of_atl_by_one_bar.py',
              'current_search_for_tickers_with_false_breakout_of_atl_by_two_bars.py',
              'current_search_for_tickers_with_rebound_situations_off_ath.py',
-             'current_search_for_tickers_with_rebound_situations_off_atl.py']
+             'current_search_for_tickers_with_rebound_situations_off_atl.py',
+             'not_in_hindsight_search_for_tickers_with_ath_equal_to_limit_level.py',
+             'not_in_hindsight_search_for_tickers_with_atl_equal_to_limit_level.py']
 
     # Run each Python file in the list in parallel
     processes = []

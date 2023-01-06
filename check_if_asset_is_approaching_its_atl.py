@@ -109,6 +109,38 @@ def get_last_close_price_of_asset(ohlcv_table_df):
     last_close_price=ohlcv_table_df["close"].iat[-1]
     return last_close_price
 
+def create_text_file_and_writ_text_to_it(text, subdirectory_name):
+  # Declare the path to the current directory
+  current_directory = os.getcwd()
+
+  # Create the subdirectory in the current directory if it does not exist
+  subdirectory_path = os.path.join(current_directory, subdirectory_name)
+  os.makedirs(subdirectory_path, exist_ok=True)
+
+  # Get the current date
+  today = datetime.datetime.now().strftime('%Y-%m-%d')
+
+  # Create the file path by combining the subdirectory and the file name (today's date)
+  file_path = os.path.join(subdirectory_path, today + '.txt')
+
+  # Check if the file exists
+  if not os.path.exists(file_path):
+    # Create the file if it does not exist
+    open(file_path, 'a').close()
+
+  # Open the file for writing
+  with open(file_path, 'a') as f:
+    # Redirect the output of the print function to the file
+    print = lambda x: f.write(str(x) + '\n')
+
+    # Output the text to the file using the print function
+    print(text)
+
+  # Close the file
+  f.close()
+
+
+
 
 
 def check_if_asset_is_approaching_its_atl(percentage_between_atl_and_closing_price,
@@ -155,7 +187,11 @@ def check_if_asset_is_approaching_its_atl(percentage_between_atl_and_closing_pri
                 print(f"in {stock_name} level={all_time_low_in_stock} is not round and is ATL")
                 continue
 
-        last_close_price=get_last_close_price_of_asset ( table_with_ohlcv_data_df )
+        last_close_price = np.nan
+        try:
+            last_close_price = get_last_close_price_of_asset(table_with_ohlcv_data_df)
+        except:
+            traceback.print_exc()
         print("last_close_price")
         print ( last_close_price)
         distance_in_percent_to_atl_from_close_price=\
@@ -195,6 +231,13 @@ def check_if_asset_is_approaching_its_atl(percentage_between_atl_and_closing_pri
 
 
     levels_formed_by_atl_df.reset_index(inplace = True)
+    string_for_output = f"Список инструментов, в которых расстояние от " \
+                        "цены закрытия до цены исторического минимума <10%:\n\n" \
+                        f"{list_of_assets_with_last_close_close_to_atl}"
+
+    # Use the function to create a text file with the text
+    # in the subdirectory "current_rebound_breakout_and_false_breakout"
+    create_text_file_and_writ_text_to_it(string_for_output, 'current_rebound_breakout_and_false_breakout')
     levels_formed_by_atl_df.to_sql(table_where_levels_formed_by_atl_will_be,
                                    engine_for_db_where_levels_formed_by_atl_will_be,
                                    if_exists = 'replace')
@@ -209,7 +252,7 @@ if __name__=="__main__":
     db_where_ohlcv_data_for_stocks_is_stored="stocks_ohlcv_daily"
     count_only_round_atl=False
     db_where_levels_formed_by_atl_will_be="levels_formed_by_highs_and_lows_for_stocks"
-    table_where_levels_formed_by_atl_will_be = "levels_formed_by_atl"
+    table_where_levels_formed_by_atl_will_be = "current_asset_approaches_its_atl"
 
     if count_only_round_atl:
         db_where_levels_formed_by_atl_will_be="round_levels_formed_by_highs_and_lows_for_stocks"

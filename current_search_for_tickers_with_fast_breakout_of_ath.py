@@ -556,6 +556,39 @@ def find_min_volume_over_last_n_days (
 
     return min_volume_over_last_n_days
 
+def create_text_file_and_writ_text_to_it(text, subdirectory_name):
+  # Declare the path to the current directory
+  current_directory = os.getcwd()
+
+  # Create the subdirectory in the current directory if it does not exist
+  subdirectory_path = os.path.join(current_directory, subdirectory_name)
+  os.makedirs(subdirectory_path, exist_ok=True)
+
+  # Get the current date
+  today = datetime.datetime.now().strftime('%Y-%m-%d')
+
+  # Create the file path by combining the subdirectory and the file name (today's date)
+  file_path = os.path.join(subdirectory_path, today + '.txt')
+
+  # Check if the file exists
+  if not os.path.exists(file_path):
+    # Create the file if it does not exist
+    open(file_path, 'a').close()
+
+  # Open the file for writing
+  with open(file_path, 'a') as f:
+    # Redirect the output of the print function to the file
+    print = lambda x: f.write(str(x) + '\n')
+
+    # Output the text to the file using the print function
+    print(text)
+
+  # Close the file
+  f.close()
+
+
+
+
 
 
 

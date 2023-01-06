@@ -549,6 +549,39 @@ def calculate_number_of_bars_which_fulfil_suppression_criterion_to_ath(last_seve
                     number_of_bars_which_fulfil_suppression_criterion + 1
     return number_of_bars_which_fulfil_suppression_criterion
 
+def create_text_file_and_writ_text_to_it(text, subdirectory_name):
+  # Declare the path to the current directory
+  current_directory = os.getcwd()
+
+  # Create the subdirectory in the current directory if it does not exist
+  subdirectory_path = os.path.join(current_directory, subdirectory_name)
+  os.makedirs(subdirectory_path, exist_ok=True)
+
+  # Get the current date
+  today = datetime.datetime.now().strftime('%Y-%m-%d')
+
+  # Create the file path by combining the subdirectory and the file name (today's date)
+  file_path = os.path.join(subdirectory_path, today + '.txt')
+
+  # Check if the file exists
+  if not os.path.exists(file_path):
+    # Create the file if it does not exist
+    open(file_path, 'a').close()
+
+  # Open the file for writing
+  with open(file_path, 'a') as f:
+    # Redirect the output of the print function to the file
+    print = lambda x: f.write(str(x) + '\n')
+
+    # Output the text to the file using the print function
+    print(text)
+
+  # Close the file
+  f.close()
+
+
+
+
 
 def calculate_number_of_bars_which_fulfil_suppression_criterion_to_atl(last_several_rows_in_np_array_slice_but_one,
                                                                        number_of_last_row_in_np_array_row_slice):
@@ -897,6 +930,12 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "count_min_volume_over_this_many_days"] = count_min_volume_over_this_many_days
 
+            string_for_output = f"Список инструментов, которые сформировали модель ЛОЖНЫЙ ПРОБОЙ исторического минимума 1М БАРОМ:\n\n" \
+                                f"{list_of_stocks_which_broke_atl}"
+            # Use the function to create a text file with the text
+            # in the subdirectory "current_rebound_breakout_and_false_breakout"
+            create_text_file_and_writ_text_to_it(string_for_output,
+                                                 'current_rebound_breakout_and_false_breakout')
             df_with_level_atr_bpu_bsu_etc.to_sql(
                 table_where_ticker_which_may_have_fast_breakout_situations_from_atl_will_be,
                 engine_for_db_where_ticker_which_may_have_breakout_situations,
