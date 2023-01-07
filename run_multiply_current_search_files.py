@@ -1,8 +1,38 @@
 import subprocess
 import sys
 import time
+import os
+import shutil
+
+def delete_files_in_current_rebound_breakout_and_false_breakout():
+  # Get current directory
+  current_dir = os.getcwd()
+
+  # Construct path to subfolder
+  subfolder_path = os.path.join(current_dir, 'current_rebound_breakout_and_false_breakout')
+
+  # Check if subfolder exists
+  if not os.path.exists(subfolder_path):
+    print("subfolder doesn't exist")
+    return
+
+  # Delete all files in subfolder
+  for filename in os.listdir(subfolder_path):
+    file_path = os.path.join(subfolder_path, filename)
+    try:
+      if os.path.isfile(file_path) or os.path.islink(file_path):
+        os.unlink(file_path)
+      elif os.path.isdir(file_path):
+        shutil.rmtree(file_path)
+    except Exception as e:
+      print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+
+
 def run_multiple_search_current_rebound_breakout_false_breakout_situations():
     # Run the Python script and capture its output
+
+    delete_files_in_current_rebound_breakout_and_false_breakout()
 
     # Get the path to the Python interpreter executable
     interpreter = sys.executable
@@ -20,7 +50,11 @@ def run_multiple_search_current_rebound_breakout_false_breakout_situations():
              'current_search_for_tickers_with_rebound_situations_off_ath.py',
              'current_search_for_tickers_with_rebound_situations_off_atl.py',
              'not_in_hindsight_search_for_tickers_with_ath_equal_to_limit_level.py',
-             'not_in_hindsight_search_for_tickers_with_atl_equal_to_limit_level.py']
+             'not_in_hindsight_search_for_tickers_with_atl_equal_to_limit_level.py',
+             'current_search_for_tickers_approaching_ath_confirmed_one_or_more_times.py',
+             'current_search_for_tickers_approaching_atl_confirmed_one_or_more_times.py',
+             'check_if_asset_is_approaching_its_atl.py',
+             'check_if_asset_is_approaching_its_ath.py']
 
     # Run each Python file in the list in parallel
     processes = []

@@ -87,6 +87,8 @@ def get_list_of_tables_in_db(engine_for_ohlcv_data_for_stocks):
 
     return list_of_tables_in_db
 
+
+
 def get_all_time_high_from_ohlcv_table(engine_for_ohlcv_data_for_stocks,
                                       table_with_ohlcv_table):
     table_with_ohlcv_data_df = \

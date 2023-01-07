@@ -521,6 +521,36 @@ def get_df_ready_for_export_to_db_for_rebound_situations_off_atl(stock_name, exc
     # df_with_level_atr_bpu_bsu_etc.loc[0, "human_time_of_bpu2"] = timestamp_of_bpu2_with_time
     return df_with_level_atr_bpu_bsu_etc
 
+def create_text_file_and_writ_text_to_it(text, subdirectory_name):
+  # Declare the path to the current directory
+  current_directory = os.getcwd()
+
+  # Create the subdirectory in the current directory if it does not exist
+  subdirectory_path = os.path.join(current_directory, subdirectory_name)
+  os.makedirs(subdirectory_path, exist_ok=True)
+
+  # Get the current date
+  today = datetime.datetime.now().strftime('%Y-%m-%d')
+
+  # Create the file path by combining the subdirectory and the file name (today's date)
+  file_path = os.path.join(subdirectory_path, today + '.txt')
+
+  # Check if the file exists
+  if not os.path.exists(file_path):
+    # Create the file if it does not exist
+    open(file_path, 'a').close()
+
+  # Open the file for writing
+  with open(file_path, 'a') as f:
+    # Redirect the output of the print function to the file
+    print = lambda x: f.write(str(x) + '\n')
+
+    # Output the text to the file using the print function
+    print(text)
+
+  # Close the file
+  f.close()
+
 
 def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is_stored,
                                           db_where_levels_formed_by_rebound_level_will_be,
@@ -677,7 +707,7 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                 row_number_of_bpu1 = ohlcv_df_with_low_equal_to_atl_slice["index_column"].iat[1]
                 row_number_of_bsu = ohlcv_df_with_low_equal_to_atl_slice["index_column"].iat[0]
 
-
+                #check if the last day low coincides with atl
                 if row_number_of_bpu1==(len(truncated_high_and_low_table_with_ohlcv_data_df)-1):
 
 
@@ -750,6 +780,7 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                                                                                      volume_of_bpu1, timestamp_of_bpu1,
                                                                                      timestamp_of_bsu_with_time,
                                                       timestamp_of_bpu1_with_time,min_volume_over_last_n_days,min_volume_over_this_many_last_days)
+
 
                     df_with_level_atr_bpu_bsu_etc.to_sql(
                         table_where_ticker_which_had_atl_equal_to_limit_level,
@@ -937,11 +968,12 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
         except:
             traceback.print_exc()
 
-
-
-
-
-
+    string_for_output = f"Список инструментов, в которых исторический минимум был подтвержден последним баром:\n" \
+                        f"{list_of_stock_tickers_with_last_low_equal_to_atl_and_equal_to_limit_level}\n\n"
+    # Use the function to create a text file with the text
+    # in the subdirectory "current_rebound_breakout_and_false_breakout"
+    create_text_file_and_writ_text_to_it(string_for_output,
+                                         'current_rebound_breakout_and_false_breakout')
     print ( "list_of_tickers_where_atl_is_also_limit_level" )
     print ( list_of_tickers_where_atl_is_also_limit_level )
     print ( "list_of_tickers_where_ath_is_also_limit_level" )

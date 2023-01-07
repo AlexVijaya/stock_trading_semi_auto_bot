@@ -920,13 +920,7 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "count_min_volume_over_this_many_days"] = count_min_volume_over_this_many_days
 
-            string_for_output = f"Список инструментов, которые сформировали модель ПРОБОЙ исторического минимума (с подтверждением)." \
-                                f"Вход на следующий день после пробоя:\n\n" \
-                                f"{list_of_stocks_which_broke_atl}"
-            # Use the function to create a text file with the text
-            # in the subdirectory "current_rebound_breakout_and_false_breakout"
-            create_text_file_and_writ_text_to_it(string_for_output,
-                                                 'current_rebound_breakout_and_false_breakout')
+
             df_with_level_atr_bpu_bsu_etc.to_sql(
                 table_where_ticker_which_may_have_fast_breakout_situations_from_atl_will_be,
                 engine_for_db_where_ticker_which_may_have_breakout_situations,
@@ -935,6 +929,13 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
         except:
             traceback.print_exc()
 
+    string_for_output = f"Список инструментов, которые сформировали модель ПРОБОЙ исторического минимума (с подтверждением)." \
+                        f"Вход на следующий день после пробоя:\n" \
+                        f"{list_of_stocks_which_broke_atl}\n\n"
+    # Use the function to create a text file with the text
+    # in the subdirectory "current_rebound_breakout_and_false_breakout"
+    create_text_file_and_writ_text_to_it(string_for_output,
+                                         'current_rebound_breakout_and_false_breakout')
     print("list_of_stocks_which_broke_ath")
     print(list_of_stocks_which_broke_ath)
     print("list_of_stocks_which_broke_atl")

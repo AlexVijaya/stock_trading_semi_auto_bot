@@ -1007,12 +1007,7 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "human_time_of_bpu1"] = timestamp_of_bpu1_with_time
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "human_time_of_bpu2"] = timestamp_of_bpu2_with_time
 
-                        string_for_output = f"Список инструментов, которые сформировали модель ОТБОЙ ОТ ИСТОРИЧЕСКОГО МАКСИМУМА:\n\n" \
-                                            f"{list_with_tickers_ready_for_rebound_off_atl}"
-                        # Use the function to create a text file with the text
-                        # in the subdirectory "current_rebound_breakout_and_false_breakout"
-                        create_text_file_and_writ_text_to_it(string_for_output,
-                                                             'current_rebound_breakout_and_false_breakout')
+
                         df_with_level_atr_bpu_bsu_etc.to_sql (
                             table_where_ticker_which_had_rebound_situations_from_ath_will_be ,
                             engine_for_db_where_levels_formed_by_rebound_level_will_be ,
@@ -1020,11 +1015,12 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
         except:
             traceback.print_exc()
 
-
-
-
-
-
+    string_for_output = f"Список инструментов, которые сформировали модель ОТБОЙ ОТ ИСТОРИЧЕСКОГО МАКСИМУМА:\n" \
+                        f"{list_with_tickers_ready_for_rebound_off_atl}\n\n"
+    # Use the function to create a text file with the text
+    # in the subdirectory "current_rebound_breakout_and_false_breakout"
+    create_text_file_and_writ_text_to_it(string_for_output,
+                                         'current_rebound_breakout_and_false_breakout')
     print ( "list_with_tickers_ready_for_rebound_off_atl" )
     print ( list_with_tickers_ready_for_rebound_off_atl )
     print ( "list_with_tickers_ready_for_rebound_off_ath" )
