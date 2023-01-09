@@ -756,10 +756,10 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             # print(f"Close of pre-breakout bar: {close_of_pre_breakout_bar}")
             # print(f"Volume of pre-breakout bar: {volume_of_pre_breakout_bar}")
 
-            if last_five_years_of_data.tail(30)['volume'].min() < 75:
+            if last_five_years_of_data.tail(30)['volume'].min() < 750000:
                 continue
 
-            if close_of_breakout_bar < 1 and last_five_years_of_data.tail(30)['volume'].min() < 100:
+            if close_of_breakout_bar < 1 and last_five_years_of_data.tail(30)['volume'].min() < 1000000:
                 continue
 
             # find all time low in last_five_years_of_data_but_one_last_day
@@ -973,7 +973,7 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             traceback.print_exc()
 
     string_for_output = f"Список инструментов, которые сформировали модель ПРОБОЙ исторического минимума (с подтверждением)." \
-                        f"Вход через 2 дня после пробоя:\n" \
+                        f"Вход через 1 день после пробоя:\n" \
                         f"{list_of_stocks_which_broke_atl}\n\n"
     # Use the function to create a text file with the text
     # in the subdirectory "current_rebound_breakout_and_false_breakout"

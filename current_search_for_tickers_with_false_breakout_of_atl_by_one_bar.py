@@ -741,10 +741,10 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             # print(f"Close of pre-breakout bar: {close_of_pre_false_breakout_bar}")
             # print(f"Volume of pre-breakout bar: {volume_of_pre_false_breakout_bar}")
 
-            if last_five_years_of_data.tail(30)['volume'].min() < 75:
+            if last_five_years_of_data.tail(30)['volume'].min() < 750000:
                 continue
 
-            if close_of_false_breakout_bar < 1 and last_five_years_of_data.tail(30)['volume'].min() < 100:
+            if close_of_false_breakout_bar < 1 and last_five_years_of_data.tail(30)['volume'].min() < 100000:
                 continue
 
             # find all time low in last_five_years_of_data_but_one_last_day

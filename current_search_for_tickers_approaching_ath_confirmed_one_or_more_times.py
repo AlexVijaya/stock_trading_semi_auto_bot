@@ -506,10 +506,10 @@ def check_if_asset_is_approaching_its_confirmed_ath(all_time_high_in_stock,
     print("last_close_price")
     print(last_close_price)
     distance_in_percent_to_ath_from_close_price = \
-        (all_time_high_in_stock - last_close_price) / all_time_high_in_stock
+        (all_time_high_in_stock - last_close_price) / last_close_price
     if distance_in_percent_to_ath_from_close_price <= percentage_between_ath_and_closing_price / 100.0:
         asset_approaches_its_ath = True
-        return asset_approaches_its_ath
+    return asset_approaches_its_ath
 
 def get_df_ready_for_export_to_db_for_rebound_situations_off_ath(stock_name, exchange, short_name, all_time_high,
                                                       advanced_atr,
@@ -741,14 +741,14 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
             #find rebound from ath
             if len(ohlcv_df_with_high_equal_to_ath_slice)>1:
                 # list_of_tickers_where_ath_is_also_limit_level.append(stock_name)
-                print ( "ohlcv_df_with_high_equal_to_ath_slice" )
-                print ( ohlcv_df_with_high_equal_to_ath_slice.to_string() )
+                # print ( "ohlcv_df_with_high_equal_to_ath_slice" )
+                # print ( ohlcv_df_with_high_equal_to_ath_slice.to_string() )
                 # print ( "list_of_tickers_where_ath_is_also_limit_level" )
                 # print ( list_of_tickers_where_ath_is_also_limit_level )
                 ohlcv_df_with_high_equal_to_ath_slice=\
                     ohlcv_df_with_high_equal_to_ath_slice.rename ( columns = {"index": "index_column"}  )
-                print ( "ohlcv_df_with_high_equal_to_ath_slice" )
-                print ( ohlcv_df_with_high_equal_to_ath_slice.to_string () )
+                # print ( "ohlcv_df_with_high_equal_to_ath_slice" )
+                # print ( ohlcv_df_with_high_equal_to_ath_slice.to_string () )
                 row_number_of_bpu1 = ohlcv_df_with_high_equal_to_ath_slice["index_column"].iat[1]
                 row_number_of_bsu = ohlcv_df_with_high_equal_to_ath_slice["index_column"].iat[0]
 
@@ -769,15 +769,15 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                 min_volume_over_last_n_days=\
                     calculate_min_volume_over_last_n_days(truncated_high_and_low_table_with_ohlcv_data_df,
                                                       min_volume_over_this_many_last_days)
-                print("min_volume_over_last_n_days")
-                print(min_volume_over_last_n_days)
+                # print("min_volume_over_last_n_days")
+                # print(min_volume_over_last_n_days)
                 if min_volume_over_last_n_days<750000:
                     continue
                 if all_time_high<1 and min_volume_over_last_n_days<1000000:
                     continue
-                list_of_stock_tickers_with_last_high_equal_to_ath_and_equal_to_limit_level.append(stock_name)
-                print("list_of_stock_tickers_with_last_high_equal_to_ath_and_equal_to_limit_level")
-                print(list_of_stock_tickers_with_last_high_equal_to_ath_and_equal_to_limit_level)
+
+                # print("list_of_stock_tickers_with_last_high_equal_to_ath_and_equal_to_limit_level")
+                # print(list_of_stock_tickers_with_last_high_equal_to_ath_and_equal_to_limit_level)
 
                 percentage_between_ath_and_closing_price=10
                 asset_is_close_to_ath=check_if_asset_is_approaching_its_confirmed_ath(all_time_high,
@@ -847,7 +847,7 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                                                                                  timestamp_of_bsu_with_time,
                                                   timestamp_of_bpu1_with_time,min_volume_over_last_n_days,min_volume_over_this_many_last_days)
 
-
+                list_of_stock_tickers_with_last_high_equal_to_ath_and_equal_to_limit_level.append(stock_name)
                 df_with_level_atr_bpu_bsu_etc.to_sql(
                     table_where_ticker_which_had_ath_equal_to_limit_level,
                     engine_for_db_where_levels_formed_by_ath_equal_to_limit_level_will_be,
@@ -859,16 +859,16 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
         except:
             traceback.print_exc()
 
-    string_for_output = f"Список инструментов который приближаются к историческуму максимуму, который был подтвержден один или более раз:\n" \
+    string_for_output = f"Список инструментов, которые приближаются к историческуму максимуму, который был подтвержден один или более раз:\n" \
                         f"{list_of_stock_tickers_with_last_high_equal_to_ath_and_equal_to_limit_level}\n\n"
     # Use the function to create a text file with the text
     # in the subdirectory "current_rebound_breakout_and_false_breakout"
     create_text_file_and_writ_text_to_it(string_for_output,
                                          'current_rebound_breakout_and_false_breakout')
-    print ( "list_of_tickers_where_atl_is_also_limit_level" )
-    print ( list_of_tickers_where_atl_is_also_limit_level )
-    print ( "list_of_tickers_where_ath_is_also_limit_level" )
-    print ( list_of_tickers_where_ath_is_also_limit_level)
+    # print ( "list_of_stock_tickers_with_last_low_equal_to_atl_and_equal_to_limit_level" )
+    # print ( list_of_stock_tickers_with_last_low_equal_to_atl_and_equal_to_limit_level )
+    print ( "list_of_stock_tickers_with_last_high_equal_to_ath_and_equal_to_limit_level" )
+    print ( list_of_stock_tickers_with_last_high_equal_to_ath_and_equal_to_limit_level)
 
 
 

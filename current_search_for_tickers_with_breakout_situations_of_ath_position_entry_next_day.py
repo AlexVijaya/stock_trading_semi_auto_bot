@@ -647,6 +647,9 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             print ( f'{stock_name} is'
                     f' number {counter} out of {len ( list_of_tables_in_ohlcv_db )}\n' )
 
+            if stock_name!="CAT":
+                continue
+
 
 
             table_with_ohlcv_data_df = \

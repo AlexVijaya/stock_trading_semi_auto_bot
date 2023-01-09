@@ -110,6 +110,10 @@ def get_last_timestamp_from_ohlcv_table(ohlcv_data_df):
     last_timestamp=ohlcv_data_df["Timestamp"].iat[-1]
     return last_timestamp
 
+def get_first_timestamp_from_ohlcv_table(ohlcv_data_df):
+    first_timestamp=ohlcv_data_df["Timestamp"].iat[0]
+    return first_timestamp
+
 def timeit(func):
     """
     Decorator for measuring function's running time.
@@ -224,7 +228,8 @@ def update_ohlcv_data_for_stocks(list_of_stock_names,
             ohlcv_data_several_last_rows_df["open_time"] = ohlcv_data_several_last_rows_df.index
             # ohlcv_data_several_last_rows_df.set_index("open_time")
             ohlcv_data_several_last_rows_df.index = \
-                range(number_of_last_index_in_ohlcv_data_df+1, number_of_last_index_in_ohlcv_data_df+1+len(ohlcv_data_several_last_rows_df))
+                range(number_of_last_index_in_ohlcv_data_df+1,
+                      number_of_last_index_in_ohlcv_data_df+1+len(ohlcv_data_several_last_rows_df))
 
             ohlcv_data_several_last_rows_df["exchange"] = exchange
             ohlcv_data_several_last_rows_df["short_name"] = short_name
@@ -254,6 +259,12 @@ def update_ohlcv_data_for_stocks(list_of_stock_names,
                 ohlcv_data_several_last_rows_df=ohlcv_data_several_last_rows_df.loc[1:,:]
             except:
                 traceback.print_exc()
+
+            first_timestamp_in_last_several_days_df=\
+                get_first_timestamp_from_ohlcv_table(ohlcv_data_several_last_rows_df)
+
+            if first_timestamp_in_last_several_days_df==last_timestamp:
+                continue
 
             try:
 

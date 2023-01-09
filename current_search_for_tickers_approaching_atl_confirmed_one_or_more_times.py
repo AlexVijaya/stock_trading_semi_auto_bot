@@ -567,7 +567,9 @@ def check_if_asset_is_approaching_its_confirmed_atl(all_time_low_in_stock,
     print("last_close_price")
     print(last_close_price)
     distance_in_percent_to_atl_from_close_price = \
-        (last_close_price - all_time_low_in_stock) / all_time_low_in_stock
+        (last_close_price - all_time_low_in_stock) / last_close_price
+    print("distance_in_percent_to_atl_from_close_price")
+    print(distance_in_percent_to_atl_from_close_price)
     if distance_in_percent_to_atl_from_close_price <= percentage_between_atl_and_closing_price / 100.0:
         asset_approaches_its_atl=True
     return asset_approaches_its_atl
@@ -772,7 +774,7 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                     continue
                 if all_time_low < 1 and min_volume_over_last_n_days < 1000000:
                     continue
-                list_of_stock_tickers_with_last_low_equal_to_atl_and_equal_to_limit_level.append(stock_name)
+
                 print("list_of_stock_tickers_with_last_low_equal_to_atl_and_equal_to_limit_level")
                 print(list_of_stock_tickers_with_last_low_equal_to_atl_and_equal_to_limit_level)
 
@@ -846,7 +848,7 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                                                                                  timestamp_of_bsu_with_time,
                                                   timestamp_of_bpu1_with_time,min_volume_over_last_n_days,min_volume_over_this_many_last_days)
 
-
+                list_of_stock_tickers_with_last_low_equal_to_atl_and_equal_to_limit_level.append(stock_name)
                 df_with_level_atr_bpu_bsu_etc.to_sql(
                     table_where_ticker_which_had_atl_equal_to_limit_level,
                     engine_for_db_where_levels_formed_by_rebound_level_will_be,
@@ -858,16 +860,16 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
         except:
             traceback.print_exc()
 
-    string_for_output = f"Список инструментов который приближаются к историческуму минимуму, который был подтвержден один или более раз:\n" \
+    string_for_output = f"Список инструментов, которые приближаются к историческуму минимуму, который был подтвержден один или более раз:\n" \
                         f"{list_of_stock_tickers_with_last_low_equal_to_atl_and_equal_to_limit_level}\n\n"
     # Use the function to create a text file with the text
     # in the subdirectory "current_rebound_breakout_and_false_breakout"
     create_text_file_and_writ_text_to_it(string_for_output,
                                          'current_rebound_breakout_and_false_breakout')
-    print ( "list_of_tickers_where_atl_is_also_limit_level" )
-    print ( list_of_tickers_where_atl_is_also_limit_level )
-    print ( "list_of_tickers_where_ath_is_also_limit_level" )
-    print ( list_of_tickers_where_ath_is_also_limit_level)
+    # print ( "list_of_stock_tickers_with_last_low_equal_to_ath_and_equal_to_limit_level" )
+    # print ( list_of_stock_tickers_with_last_low_equal_to_ath_and_equal_to_limit_level )
+    print ( "list_of_stock_tickers_with_last_low_equal_to_atl_and_equal_to_limit_level" )
+    print ( list_of_stock_tickers_with_last_low_equal_to_atl_and_equal_to_limit_level)
 
 
 

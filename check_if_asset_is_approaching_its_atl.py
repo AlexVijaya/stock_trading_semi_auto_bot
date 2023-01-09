@@ -195,7 +195,7 @@ def check_if_asset_is_approaching_its_atl(percentage_between_atl_and_closing_pri
         print("last_close_price")
         print ( last_close_price)
         distance_in_percent_to_atl_from_close_price=\
-            (last_close_price-all_time_low_in_stock)/all_time_low_in_stock
+            (last_close_price-all_time_low_in_stock)/last_close_price
         if distance_in_percent_to_atl_from_close_price <= percentage_between_atl_and_closing_price/100.0:
             print(f"last closing price={last_close_price} is"
                   f" within {percentage_between_atl_and_closing_price}% range to atl={all_time_low_in_stock}")

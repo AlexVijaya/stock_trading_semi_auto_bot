@@ -3,13 +3,17 @@ import sys
 import time
 import os
 import shutil
-
+import datetime
 def delete_files_in_current_rebound_breakout_and_false_breakout():
   # Get current directory
   current_dir = os.getcwd()
 
   # Construct path to subfolder
   subfolder_path = os.path.join(current_dir, 'current_rebound_breakout_and_false_breakout')
+
+  file_path_to_delete=\
+      get_file_name_for_deletion(subdirectory_name='current_rebound_breakout_and_false_breakout')
+
 
   # Check if subfolder exists
   if not os.path.exists(subfolder_path):
@@ -18,7 +22,10 @@ def delete_files_in_current_rebound_breakout_and_false_breakout():
 
   # Delete all files in subfolder
   for filename in os.listdir(subfolder_path):
+
     file_path = os.path.join(subfolder_path, filename)
+    if file_path!=file_path_to_delete:
+        continue
     try:
       if os.path.isfile(file_path) or os.path.islink(file_path):
         os.unlink(file_path)
@@ -26,6 +33,22 @@ def delete_files_in_current_rebound_breakout_and_false_breakout():
         shutil.rmtree(file_path)
     except Exception as e:
       print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+def get_file_name_for_deletion(subdirectory_name='current_rebound_breakout_and_false_breakout'):
+
+    # Declare the path to the current directory
+    current_directory = os.getcwd()
+
+    # Create the subdirectory in the current directory if it does not exist
+    subdirectory_path = os.path.join(current_directory, subdirectory_name)
+    os.makedirs(subdirectory_path, exist_ok=True)
+
+    # Get the current date
+    today = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    # Create the file path by combining the subdirectory and the file name (today's date)
+    file_path = os.path.join(subdirectory_path, today + '.txt')
+    return file_path
 
 
 
