@@ -256,7 +256,11 @@ def update_ohlcv_data_for_stocks(list_of_stock_names,
             print("len of ohlcv_data_several_last_rows_df is more than 1")
 
             try:
-                ohlcv_data_several_last_rows_df=ohlcv_data_several_last_rows_df.loc[1:,:]
+                print("ohlcv_data_several_last_rows_df_first_row_is_not_deleted")
+                print(ohlcv_data_several_last_rows_df.to_string())
+                ohlcv_data_several_last_rows_df=ohlcv_data_several_last_rows_df.iloc[1:,:]
+                print("ohlcv_data_several_last_rows_df_first_row_deleted")
+                print(ohlcv_data_several_last_rows_df.to_string())
             except:
                 traceback.print_exc()
 
@@ -264,6 +268,7 @@ def update_ohlcv_data_for_stocks(list_of_stock_names,
                 get_first_timestamp_from_ohlcv_table(ohlcv_data_several_last_rows_df)
 
             if first_timestamp_in_last_several_days_df==last_timestamp:
+                print("first_timestamp_in_last_several_days_df==last_timestamp")
                 continue
 
             try:

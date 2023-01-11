@@ -595,6 +595,9 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
             print ( f'{stock_name} is'
                     f' number {counter} out of {len ( list_of_tables_in_ohlcv_db )}\n' )
 
+            # if stock_name!='NVO':
+            #     continue
+
 
 
             table_with_ohlcv_data_df = \
@@ -680,8 +683,8 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
             # print ( initial_table_with_ohlcv_data_df.head(10).to_string() )
             #
 
-            # print ( "truncated_high_and_low_table_with_ohlcv_data_df" )
-            # print ( truncated_high_and_low_table_with_ohlcv_data_df )
+            print ( "truncated_high_and_low_table_with_ohlcv_data_df" )
+            print ( truncated_high_and_low_table_with_ohlcv_data_df )
 
             all_time_high=truncated_high_and_low_table_with_ohlcv_data_df["high"].max()
             all_time_low = truncated_high_and_low_table_with_ohlcv_data_df["low"].min ()
@@ -710,6 +713,12 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                 print ( ohlcv_df_with_high_equal_to_ath_slice.to_string () )
                 row_number_of_bpu1 = ohlcv_df_with_high_equal_to_ath_slice["index_column"].iat[1]
                 row_number_of_bsu = ohlcv_df_with_high_equal_to_ath_slice["index_column"].iat[0]
+                print("row_number_of_bsu")
+                print(row_number_of_bsu)
+                print("row_number_of_bpu1")
+                print(row_number_of_bpu1)
+                print("len(truncated_high_and_low_table_with_ohlcv_data_df)")
+                print(len(truncated_high_and_low_table_with_ohlcv_data_df))
 
 
                 if row_number_of_bpu1==(len(truncated_high_and_low_table_with_ohlcv_data_df)-1):

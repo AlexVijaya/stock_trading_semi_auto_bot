@@ -53,6 +53,41 @@ def find_if_level_is_round(level):
             return level_is_round
 
 
+def create_string_for_output_to_file_for_stock_rebound_from_atl(stock_name,
+                                               atl,
+                                               advanced_atr,
+                                               advanced_atr_over_this_period,
+                                               low_of_bsu,
+                                               low_of_bpu1,
+                                               low_of_bpu2,
+                                               close_of_bpu2,
+                                               timestamp_of_bsu_without_time,
+                                               timestamp_of_bpu1_without_time,
+                                               timestamp_of_bpu2_without_time):
+    stop_loss = atl - (advanced_atr * 0.05)
+    calculated_backlash_from_advanced_atr = advanced_atr * 0.05
+    buy_limit = atl + (advanced_atr * 0.5)
+    take_profit_3_to_1 = buy_limit + (advanced_atr * 0.5) * 3
+    take_profit_4_to_1 = buy_limit + (advanced_atr * 0.5) * 4
+
+    stop_loss = round(stop_loss, 3)
+    calculated_backlash_from_advanced_atr = round(calculated_backlash_from_advanced_atr, 3)
+    buy_limit = round(buy_limit, 3)
+    take_profit_3_to_1 = round(take_profit_3_to_1, 3)
+    take_profit_4_to_1 = round(take_profit_4_to_1, 3)
+
+    advanced_atr = round(advanced_atr, 3)
+    low_of_bsu = round(low_of_bsu, 3)
+    low_of_bpu1 = round(low_of_bpu1, 3)
+    low_of_bpu2 = round(low_of_bpu2, 3)
+    close_of_bpu2 = round(close_of_bpu2, 3)
+
+
+    string_for_output=f"Инструмент = {stock_name} , модель = Отбой от ATL, ATL={atl}, ATR({advanced_atr_over_this_period})={advanced_atr}, люфт={calculated_backlash_from_advanced_atr}, допустимый_люфт={acceptable_backlash}, отложенный_ордер={buy_limit}, расчетный_SL={stop_loss}, TP(3/1)={take_profit_3_to_1}, TP(4/1)={take_profit_4_to_1}, low_of_bsu={low_of_bsu}, low_of_bpu1={low_of_bpu1}, low_of_bpu2={low_of_bpu2}, close_of_bpu2={close_of_bpu2}, дата_бсу={timestamp_of_bsu_without_time}, дата_бпу1={timestamp_of_bpu1_without_time}, дата_бпу2={timestamp_of_bpu2_without_time}\n\n"
+
+
+    return string_for_output
+
 def connect_to_postres_db_without_deleting_it_first(database):
     dialect = db_config.dialect
     driver = db_config.driver
@@ -540,7 +575,7 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
             print ( f'{stock_name} is'
                     f' number {counter} out of {len ( list_of_tables_in_ohlcv_db )}\n' )
 
-            # if stock_name!='MBI':
+            # if stock_name!='CLOV':
             #     continue
 
 
@@ -668,7 +703,18 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                 row_number_of_bsu = ohlcv_df_with_low_equal_to_atl_slice["index_column"].iat[0]
                 row_number_of_bpu2=row_number_of_bpu1+1
 
-                if row_number_of_bpu2!=len(truncated_high_and_low_table_with_ohlcv_data_df_slice)-1:
+                # print("row_number_of_bsu")
+                # print(row_number_of_bsu)
+                # print("row_number_of_bpu1")
+                # print(row_number_of_bpu1)
+                # print("row_number_of_bpu2")
+                # print(row_number_of_bpu2)
+                # print("len(truncated_high_and_low_table_with_ohlcv_data_df)-1")
+                # print(len(truncated_high_and_low_table_with_ohlcv_data_df)-1)
+                # print("len(truncated_high_and_low_table_with_ohlcv_data_df_slice)-1")
+                # print(len(truncated_high_and_low_table_with_ohlcv_data_df_slice) - 1)
+
+                if row_number_of_bpu2!=len(truncated_high_and_low_table_with_ohlcv_data_df)-1:
                     continue
                 # print ( "row_number_of_bpu1" )
                 # print ( row_number_of_bpu1 )
@@ -842,198 +888,40 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
 
 
 
+
+
                         df_with_level_atr_bpu_bsu_etc.to_sql (
                             table_where_ticker_which_had_rebound_situations_from_atl_will_be ,
                             engine_for_db_where_levels_formed_by_rebound_level_will_be ,
                             if_exists = 'append' )
+                        string_for_output=create_string_for_output_to_file_for_stock_rebound_from_atl(stock_name,
+                                               all_time_low,
+                                               advanced_atr,
+                                               advanced_atr_over_this_period,
+                                               low_of_bsu,
+                                               low_of_bpu1,
+                                               low_of_bpu2,
+                                               close_of_bpu2,
+                                               timestamp_of_bsu_without_time,
+                                               timestamp_of_bpu1_without_time,
+                                               timestamp_of_bpu2_without_time)
+                        create_text_file_and_writ_text_to_it(string_for_output,
+                                                             'current_rebound_breakout_and_false_breakout')
 
 ###############################################
-            #
-            # #find rebound from ath
-            # if len(ohlcv_df_with_high_equal_to_ath_slice)>1:
-            #
-            #     # print ( "ohlcv_df_with_high_equal_to_ath_slice" )
-            #     # print ( ohlcv_df_with_high_equal_to_ath_slice )
-            #     print ( "list_with_tickers_ready_for_rebound_off_ath" )
-            #     print ( list_with_tickers_ready_for_rebound_off_ath )
-            #     ohlcv_df_with_high_equal_to_ath_slice=\
-            #         ohlcv_df_with_high_equal_to_ath_slice.rename(columns={"index":"index_column"})
-            #     # print ( "ohlcv_df_with_high_equal_to_ath_slice" )
-            #     # print ( ohlcv_df_with_high_equal_to_ath_slice.to_string () )
-            #
-            #     row_number_of_bpu1 = ohlcv_df_with_high_equal_to_ath_slice["index_column"].iat[1]
-            #     row_number_of_bsu = ohlcv_df_with_high_equal_to_ath_slice["index_column"].iat[0]
-            #     # print ( "row_number_of_bpu1" )
-            #     # print ( row_number_of_bpu1 )
-            #
-            #     # get ohlcv of tvx with high and low truncated
-            #     open_of_tvx,high_of_tvx,low_of_tvx,close_of_tvx=\
-            #         get_ohlc_of_tvx(truncated_high_and_low_table_with_ohlcv_data_df,
-            #                          row_number_of_bpu1)
-            #     # get ohlcv of bpu2 with high and low truncated
-            #     open_of_bpu2 , high_of_bpu2 , low_of_bpu2 , close_of_bpu2 = \
-            #         get_ohlc_of_bpu2 ( truncated_high_and_low_table_with_ohlcv_data_df ,
-            #                            row_number_of_bpu1 )
-            #
-            #     atr = calculate_atr ( atr_over_this_period ,
-            #                           table_with_ohlcv_data_df ,
-            #                           row_number_of_bpu1 )
-            #     advanced_atr = calculate_advanced_atr ( advanced_atr_over_this_period ,
-            #                                             table_with_ohlcv_data_df ,
-            #                                             row_number_of_bpu1 )
-            #     atr=round(atr,6)
-            #     advanced_atr = round ( advanced_atr , 6 )
-            #
-            #     low_of_bsu = truncated_high_and_low_table_with_ohlcv_data_df_slice.loc[row_number_of_bsu , "low"]
-            #     low_of_bpu1 = truncated_high_and_low_table_with_ohlcv_data_df_slice.loc[row_number_of_bpu1 , "low"]
-            #     open_of_bsu = truncated_high_and_low_table_with_ohlcv_data_df_slice.loc[row_number_of_bsu , "open"]
-            #     open_of_bpu1 = truncated_high_and_low_table_with_ohlcv_data_df_slice.loc[row_number_of_bpu1 , "open"]
-            #     close_of_bsu = truncated_high_and_low_table_with_ohlcv_data_df_slice.loc[row_number_of_bsu , "close"]
-            #     close_of_bpu1 = truncated_high_and_low_table_with_ohlcv_data_df_slice.loc[row_number_of_bpu1 , "close"]
-            #     high_of_bsu = truncated_high_and_low_table_with_ohlcv_data_df_slice.loc[row_number_of_bsu , "high"]
-            #     high_of_bpu1 = truncated_high_and_low_table_with_ohlcv_data_df_slice.loc[row_number_of_bpu1 , "high"]
-            #
-            #     # get ohlcv of bsu, bpu1,bpu2, tvx
-            #     # get ohlcv of bpu2
-            #     # print ("table_with_ohlcv_data_df_2")
-            #     # print (table_with_ohlcv_data_df.head(10).to_string())
-            #     true_open_of_bpu2 , true_high_of_bpu2 , true_low_of_bpu2 , true_close_of_bpu2 = \
-            #         get_ohlc_of_bpu2 ( table_with_ohlcv_data_df ,
-            #                            row_number_of_bpu1 )
-            #
-            #     # get ohlcv of tvx
-            #     true_open_of_tvx , true_high_of_tvx , true_low_of_tvx , true_close_of_tvx = \
-            #         get_ohlc_of_tvx ( table_with_ohlcv_data_df ,
-            #                           row_number_of_bpu1 )
-            #     # get ohlc of bsu, bpu1
-            #     true_low_of_bsu = table_with_ohlcv_data_df_slice.loc[row_number_of_bsu , "low"]
-            #     true_low_of_bpu1 = table_with_ohlcv_data_df_slice.loc[row_number_of_bpu1 , "low"]
-            #     # true_high_of_bsu = table_with_ohlcv_data_df_slice.loc[row_number_of_bsu , "high"]
-            #     # true_high_of_bpu1 = table_with_ohlcv_data_df_slice.loc[row_number_of_bpu1 , "high"]
-            #     #
-            #     # print("table_with_ohlcv_data_df_slice_in_ath")
-            #     # print(table_with_ohlcv_data_df_slice.head(10).to_string())
-            #     true_open_of_bsu = table_with_ohlcv_data_df_slice.loc[row_number_of_bsu , "open"]
-            #     true_open_of_bpu1 = table_with_ohlcv_data_df_slice.loc[
-            #         row_number_of_bpu1 , "open"]
-            #     true_close_of_bsu = table_with_ohlcv_data_df_slice.loc[
-            #         row_number_of_bsu , "close"]
-            #     true_close_of_bpu1 = table_with_ohlcv_data_df_slice.loc[
-            #         row_number_of_bpu1 , "close"]
-            #     true_high_of_bsu = table_with_ohlcv_data_df_slice.loc[row_number_of_bsu , "high"]
-            #     true_high_of_bpu1 = table_with_ohlcv_data_df_slice.loc[
-            #         row_number_of_bpu1 , "high"]
-            #
-            #     volume_of_bsu = table_with_ohlcv_data_df.loc[row_number_of_bsu , "volume"]
-            #     volume_of_bpu1 = table_with_ohlcv_data_df.loc[
-            #         row_number_of_bpu1 , "volume"]
-            #     volume_of_bpu2 = get_volume_of_bpu2 ( table_with_ohlcv_data_df ,
-            #                                           row_number_of_bpu1 )
-            #
-            #
-            #
-            #     if all_time_high<=1:
-            #         if volume_of_bpu1 < 1000000 or volume_of_bsu < 1000000 or volume_of_bpu2 < 1000000:
-            #             continue
-            #
-            #     if volume_of_bpu1 < 750000 or volume_of_bsu < 750000 or volume_of_bpu2 < 750000:
-            #         continue
-            #
-            #     if open_of_tvx>=close_of_bpu2:
-            #         continue
-            #
-            #     if true_high_of_tvx<all_time_high-0.5*atr:
-            #         continue
-            #
-            #
-            #
-            #     timestamp_of_bpu2 = get_timestamp_of_bpu2 ( truncated_high_and_low_table_with_ohlcv_data_df ,
-            #                                                 row_number_of_bpu1 )
-            #     timestamp_of_bpu1 = truncated_high_and_low_table_with_ohlcv_data_df.loc[row_number_of_bpu1 , "Timestamp"]
-            #     timestamp_of_bsu = truncated_high_and_low_table_with_ohlcv_data_df.loc[row_number_of_bsu , "Timestamp"]
-            #
-            #     timestamp_of_bpu2_with_time , timestamp_of_bpu2_without_time = get_date_with_and_without_time_from_timestamp (
-            #         timestamp_of_bpu2 )
-            #     timestamp_of_bpu1_with_time , timestamp_of_bpu1_without_time = get_date_with_and_without_time_from_timestamp (
-            #         timestamp_of_bpu1 )
-            #     timestamp_of_bsu_with_time , timestamp_of_bsu_without_time = get_date_with_and_without_time_from_timestamp (
-            #         timestamp_of_bsu )
-            #
-            #     # print ( "high_of_bpu2" )
-            #     # print ( high_of_bpu2 )
-            #
-            #     #calcualte atr over 5 days before bpu2. bpu2 is not included
-            #     # atr_over_this_period=5
-            #
-            #
-            #
-            #     asset_not_open_into_level_bool = \
-            #         check_if_bsu_bpu1_bpu2_do_not_open_into_ath_level ( acceptable_backlash , atr , open_of_bsu ,
-            #                                                             open_of_bpu1 , open_of_bpu2 ,
-            #                                                             high_of_bsu , high_of_bpu1 , high_of_bpu2 ,
-            #                                                             low_of_bsu , low_of_bpu1 , low_of_bpu2 )
-            #     asset_not_close_into_level_bool = \
-            #         check_if_bsu_bpu1_bpu2_do_not_close_into_ath_level ( acceptable_backlash , atr , close_of_bsu ,
-            #                                                              close_of_bpu1 , close_of_bpu2 ,
-            #                                                              high_of_bsu , high_of_bpu1 , high_of_bpu2 ,
-            #                                                              low_of_bsu , low_of_bpu1 , low_of_bpu2 )
-            #
-            #     if not asset_not_open_into_level_bool and not asset_not_close_into_level_bool:
-            #         continue
-            #
-            #
-            #     if atr>0:
-            #         backlash=abs(all_time_high-true_high_of_bpu2)
-            #         if (backlash<=atr*acceptable_backlash) and (all_time_high-high_of_bpu2)>=0:
-            #             list_with_tickers_ready_for_rebound_off_ath.append ( stock_name )
-            #
-            #             list_with_tickers_ready_for_rebound_off_atl.append ( stock_name )
-            #             df_with_level_atr_bpu_bsu_etc = pd.DataFrame ()
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "ticker"] = stock_name
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "exchange"] = exchange
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "short_name"] = short_name
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "ath"] = all_time_high
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "atr"] = atr
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "advanced_atr"] = advanced_atr
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "atr_over_this_period"] = atr_over_this_period
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "advanced_atr_over_this_period"] =\
-            #                 advanced_atr_over_this_period
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "backlash"] = backlash
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "acceptable_backlash"] = acceptable_backlash
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "high_of_bsu"] = high_of_bsu
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "high_of_bpu1"] = high_of_bpu1
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "high_of_bpu2"] = high_of_bpu2
-            #
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "true_high_of_bsu"] = true_high_of_bsu
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "true_high_of_bpu1"] = true_high_of_bpu1
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "true_high_of_bpu2"] = true_high_of_bpu2
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "close_of_bpu2"] = close_of_bpu2
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "open_of_tvx"] = open_of_tvx
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "volume_of_bsu"] = volume_of_bsu
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "volume_of_bpu1"] = volume_of_bpu1
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "volume_of_bpu2"] = volume_of_bpu2
-            #
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "timestamp_of_bsu"] = timestamp_of_bsu
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "timestamp_of_bpu1"] = timestamp_of_bpu1
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "timestamp_of_bpu2"] = timestamp_of_bpu2
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "human_time_of_bsu"] = timestamp_of_bsu_with_time
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "human_time_of_bpu1"] = timestamp_of_bpu1_with_time
-            #             df_with_level_atr_bpu_bsu_etc.loc[0 , "human_time_of_bpu2"] = timestamp_of_bpu2_with_time
-            #
-            #             df_with_level_atr_bpu_bsu_etc.to_sql (
-            #                 table_where_ticker_which_had_rebound_situations_from_ath_will_be ,
-            #                 engine_for_db_where_levels_formed_by_rebound_level_will_be ,
-            #                 if_exists = 'append' )
+
         except Exception as e:
             traceback.print_exc()
             print(e,f'error in {stock_name}')
 
-    string_for_output = f"Список инструментов, которые сформировали модель ОТБОЙ ОТ ИСТОРИЧЕСКОГО МИНИМУМА:\n" \
-                        f"{list_with_tickers_ready_for_rebound_off_atl}\n\n"
+
+    # string_for_output = f"Список инструментов, которые сформировали модель ОТБОЙ ОТ ИСТОРИЧЕСКОГО МИНИМУМА:\n" \
+    #                     f"" \
+    #                     f"{list_with_tickers_ready_for_rebound_off_atl}\n\n"
     # Use the function to create a text file with the text
     # in the subdirectory "current_rebound_breakout_and_false_breakout"
-    create_text_file_and_writ_text_to_it(string_for_output,
-                                         'current_rebound_breakout_and_false_breakout')
+    # create_text_file_and_writ_text_to_it(string_for_output,
+    #                                      'current_rebound_breakout_and_false_breakout')
     print ( "list_with_tickers_ready_for_rebound_off_atl" )
     print ( list_with_tickers_ready_for_rebound_off_atl )
     print ( "list_with_tickers_ready_for_rebound_off_ath" )
