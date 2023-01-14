@@ -860,13 +860,13 @@ def search_for_tickers_with_false_breakout_situations(db_where_ohlcv_data_for_st
 
             if close_of_false_breakout_bar >= all_time_low:
                 continue
-
-            if open_of_next_day_bar_after_break_out_bar <= all_time_low:
+            print(f"5.5found_stock={stock_name}",f"atl={all_time_low}",f"open_of_next_day_bar_after_break_out_bar={open_of_next_day_bar_after_break_out_bar}  ")
+            if open_of_next_day_bar_after_break_out_bar >= all_time_low:
                 continue
 
             print(f"6found_stock={stock_name}")
 
-            if close_of_next_day_bar_after_break_out_bar >= all_time_low:
+            if close_of_next_day_bar_after_break_out_bar <= all_time_low:
                 continue
 
             print(f"7found_stock={stock_name}")
@@ -948,6 +948,24 @@ def search_for_tickers_with_false_breakout_situations(db_where_ohlcv_data_for_st
             print("list_of_stocks_which_broke_atl")
             print(list_of_stocks_which_broke_atl)
 
+            buy_order = all_time_low + (advanced_atr * 0.5)
+            technical_stop_loss = min(low_of_false_breakout_bar, low_of_next_day_bar_after_break_out_bar) - (0.05 * advanced_atr)
+            distance_between_technical_stop_loss_and_buy_order = buy_order - technical_stop_loss
+            take_profit_when_stop_loss_is_technical_3_to_1 = buy_order + (buy_order - technical_stop_loss) * 3
+            take_profit_when_stop_loss_is_technical_4_to_1 = buy_order + (buy_order - technical_stop_loss) * 4
+            distance_between_technical_stop_loss_and_buy_order_in_atr = \
+                distance_between_technical_stop_loss_and_buy_order / advanced_atr
+            # round technical stop loss and take profit for ease of looking at
+            buy_order = round(buy_order, 3)
+            technical_stop_loss = round(technical_stop_loss, 3)
+            take_profit_when_stop_loss_is_technical_3_to_1 = \
+                round(take_profit_when_stop_loss_is_technical_3_to_1, 3)
+            take_profit_when_stop_loss_is_technical_4_to_1 = \
+                round(take_profit_when_stop_loss_is_technical_4_to_1, 3)
+
+            distance_between_technical_stop_loss_and_buy_order_in_atr = \
+                round(distance_between_technical_stop_loss_and_buy_order_in_atr, 3)
+
             df_with_level_atr_bpu_bsu_etc = pd.DataFrame()
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "ticker"] = stock_name
@@ -955,6 +973,8 @@ def search_for_tickers_with_false_breakout_situations(db_where_ohlcv_data_for_st
                 0, "exchange"] = exchange
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "short_name"] = short_name
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "model"] = "ЛОЖНЫЙ_ПРОБОЙ_ATL_2мя_БАРАМИ"
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "atl"] = all_time_low
             df_with_level_atr_bpu_bsu_etc.loc[
@@ -995,20 +1015,7 @@ def search_for_tickers_with_false_breakout_situations(db_where_ohlcv_data_for_st
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "volume_of_pre_false_breakout_bar"] = volume_of_pre_false_breakout_bar
 
-            df_with_level_atr_bpu_bsu_etc.loc[
-                0, "timestamp_of_next_day_bar_after_break_out_bar"] = timestamp_of_next_day_bar_after_break_out_bar
-            df_with_level_atr_bpu_bsu_etc.loc[
-                0, "human_date_of_next_day_bar_after_break_out_bar"] = date_of_next_day_bar_after_break_out_bar
-            df_with_level_atr_bpu_bsu_etc.loc[
-                0, "open_of_next_day_bar_after_break_out_bar"] = open_of_next_day_bar_after_break_out_bar
-            df_with_level_atr_bpu_bsu_etc.loc[
-                0, "high_of_next_day_bar_after_break_out_bar"] = high_of_next_day_bar_after_break_out_bar
-            df_with_level_atr_bpu_bsu_etc.loc[
-                0, "low_of_next_day_bar_after_break_out_bar"] = low_of_next_day_bar_after_break_out_bar
-            df_with_level_atr_bpu_bsu_etc.loc[
-                0, "close_of_next_day_bar_after_break_out_bar"] = close_of_next_day_bar_after_break_out_bar
-            df_with_level_atr_bpu_bsu_etc.loc[
-                0, "volume_of_next_day_bar_after_break_out_bar"] = volume_of_next_day_bar_after_break_out_bar
+
 
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "timestamp_of_false_breakout_bar"] = timestamp_of_false_breakout_bar
@@ -1026,12 +1033,38 @@ def search_for_tickers_with_false_breakout_situations(db_where_ohlcv_data_for_st
                 0, "volume_of_false_breakout_bar"] = volume_of_false_breakout_bar
 
             df_with_level_atr_bpu_bsu_etc.loc[
+                0, "timestamp_of_next_day_bar_after_break_out_bar"] = timestamp_of_next_day_bar_after_break_out_bar
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "human_date_of_next_day_bar_after_break_out_bar"] = date_of_next_day_bar_after_break_out_bar
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "open_of_next_day_bar_after_break_out_bar"] = open_of_next_day_bar_after_break_out_bar
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "high_of_next_day_bar_after_break_out_bar"] = high_of_next_day_bar_after_break_out_bar
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "low_of_next_day_bar_after_break_out_bar"] = low_of_next_day_bar_after_break_out_bar
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "close_of_next_day_bar_after_break_out_bar"] = close_of_next_day_bar_after_break_out_bar
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "volume_of_next_day_bar_after_break_out_bar"] = volume_of_next_day_bar_after_break_out_bar
+
+            df_with_level_atr_bpu_bsu_etc.loc[
                 0, "min_volume_over_last_n_days"] = last_five_years_of_data['volume'].tail(
                 count_min_volume_over_this_many_days).min()
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "count_min_volume_over_this_many_days"] = count_min_volume_over_this_many_days
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "buy_order"] = buy_order
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "technical_stop_loss"] = technical_stop_loss
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "take_profit_3_to_1"] = take_profit_when_stop_loss_is_technical_3_to_1
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "take_profit_4_to_1"] = take_profit_when_stop_loss_is_technical_4_to_1
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "distance_between_technical_stop_loss_and_buy_order_in_atr"] = distance_between_technical_stop_loss_and_buy_order_in_atr
 
-
+            print("df_with_level_atr_bpu_bsu_etc")
+            print(df_with_level_atr_bpu_bsu_etc.to_string())
             df_with_level_atr_bpu_bsu_etc.to_sql(
                 table_where_ticker_which_may_have_false_breakout_situations_from_atl_will_be,
                 engine_for_db_where_ticker_which_may_have_false_breakout_situations,

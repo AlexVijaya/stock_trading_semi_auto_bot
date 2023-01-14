@@ -861,6 +861,8 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             print("list_of_stocks_which_broke_atl")
             print(list_of_stocks_which_broke_atl)
 
+
+
             df_with_level_atr_bpu_bsu_etc = pd.DataFrame()
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "ticker"] = stock_name

@@ -888,6 +888,32 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             print("list_of_stocks_which_broke_atl")
             print(list_of_stocks_which_broke_atl)
 
+            calculated_stop_loss = all_time_low + (advanced_atr * 0.05)
+            sell_order = all_time_low - (advanced_atr * 0.5)
+            take_profit_when_sl_is_calculated_3_to_1 = sell_order - (calculated_stop_loss - sell_order) * 3
+            take_profit_when_sl_is_calculated_4_to_1 = sell_order - (calculated_stop_loss - sell_order) * 4
+            # round decimals for ease of looking at
+            sell_order = round(sell_order, 3)
+            calculated_stop_loss = round(calculated_stop_loss, 3)
+            take_profit_when_sl_is_calculated_3_to_1 = round(take_profit_when_sl_is_calculated_3_to_1, 3)
+            take_profit_when_sl_is_calculated_4_to_1 = round(take_profit_when_sl_is_calculated_4_to_1, 3)
+
+            # plot all lines with advanced atr (stop loss is technical)
+            technical_stop_loss = high_of_breakout_bar + (0.05 * advanced_atr)
+            distance_between_technical_stop_loss_and_sell_order = technical_stop_loss - sell_order
+            take_profit_when_sl_is_technical_3_to_1 = sell_order - (technical_stop_loss - sell_order) * 3
+            take_profit_when_sl_is_technical_4_to_1 = sell_order - (technical_stop_loss - sell_order) * 4
+            distance_between_technical_stop_loss_and_sell_order_in_atr = \
+                distance_between_technical_stop_loss_and_sell_order / advanced_atr
+            # round technical stop loss and take profit for ease of looking at
+            technical_stop_loss = round(technical_stop_loss, 3)
+            take_profit_when_sl_is_technical_3_to_1 = \
+                round(take_profit_when_sl_is_technical_3_to_1, 3)
+            take_profit_when_sl_is_technical_4_to_1 = \
+                round(take_profit_when_sl_is_technical_4_to_1, 3)
+            distance_between_technical_stop_loss_and_sell_order_in_atr = \
+                round(distance_between_technical_stop_loss_and_sell_order_in_atr, 3)
+
             df_with_level_atr_bpu_bsu_etc = pd.DataFrame()
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "ticker"] = stock_name
@@ -970,6 +996,24 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
                 count_min_volume_over_this_many_days).min()
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "count_min_volume_over_this_many_days"] = count_min_volume_over_this_many_days
+
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "sell_order"] = sell_order
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "calculated_stop_loss"] = calculated_stop_loss
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "take_profit_when_sl_is_calculated_3_to_1"] = take_profit_when_sl_is_calculated_3_to_1
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "take_profit_when_sl_is_calculated_4_to_1"] = take_profit_when_sl_is_calculated_4_to_1
+
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "technical_stop_loss"] = technical_stop_loss
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "take_profit_when_sl_is_technical_3_to_1"] = take_profit_when_sl_is_technical_3_to_1
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "take_profit_when_sl_is_technical_4_to_1"] = take_profit_when_sl_is_technical_4_to_1
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "distance_between_technical_sl_and_sell_order_in_atr"] = distance_between_technical_stop_loss_and_sell_order_in_atr
 
 
             df_with_level_atr_bpu_bsu_etc.to_sql(
