@@ -83,19 +83,19 @@ def run_multiple_search_current_rebound_breakout_false_breakout_situations():
     # Run each Python file in the list in parallel
     processes = []
     for file in files:
-        process = subprocess.Popen([f'{interpreter}', file], stdout=subprocess.PIPE)
+        process = subprocess.Popen([f'{interpreter}', file])
         processes.append(process)
 
     # Wait for the processes to complete and get their output
-    outputs = []
+    # outputs = []
     for process in processes:
         output, _ = process.communicate()
-        outputs.append(output.decode())
+        # outputs.append(output.decode())
 
-    # Print the output of the processes
-    for output in outputs:
-        print(output)
-        # pprint.print(output)
+    # # Print the output of the processes
+    # for output in outputs:
+    #     print(output)
+    #     # pprint.print(output)
 if __name__=="__main__":
     start_time = time.time()
     run_multiple_search_current_rebound_breakout_false_breakout_situations()

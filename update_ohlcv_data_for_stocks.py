@@ -147,6 +147,7 @@ def get_list_of_tables_in_db_with_db_as_parameter(database_where_ohlcv_for_stock
 def get_number_of_last_index(ohlcv_data_df):
     number_of_last_index=ohlcv_data_df["index"].max()
     return number_of_last_index
+
 def update_ohlcv_data_for_stocks(list_of_stock_names,
                                 database_where_ohlcv_for_stocks_is):
     engine_for_ohlcv_tables , connection_to_ohlcv_for_usdt_pairs = \
@@ -157,7 +158,10 @@ def update_ohlcv_data_for_stocks(list_of_stock_names,
     stock_info_df = pd.read_sql_table ( "joint_table_of_all_stock_info" ,
                                         engine_for_stock_info )
     for number_of_stock,stock_name in enumerate(list_of_stock_names):
+
         print("-"*80)
+        # if stock_name!="ASH":
+        #     continue
         ohlcv_data_several_last_rows_df=pd.DataFrame()
         # print("stock_info_df")
         # print(stock_info_df)
@@ -226,10 +230,17 @@ def update_ohlcv_data_for_stocks(list_of_stock_names,
             ohlcv_data_several_last_rows_df['Timestamp'] = \
                 [datetime.datetime.timestamp(x) for x in ohlcv_data_several_last_rows_df.index]
             ohlcv_data_several_last_rows_df["open_time"] = ohlcv_data_several_last_rows_df.index
+
+            print("ohlcv_data_several_last_rows_df")
+            print(ohlcv_data_several_last_rows_df)
+
             # ohlcv_data_several_last_rows_df.set_index("open_time")
             ohlcv_data_several_last_rows_df.index = \
-                range(number_of_last_index_in_ohlcv_data_df+1,
-                      number_of_last_index_in_ohlcv_data_df+1+len(ohlcv_data_several_last_rows_df))
+                range(number_of_last_index_in_ohlcv_data_df,
+                      number_of_last_index_in_ohlcv_data_df+len(ohlcv_data_several_last_rows_df))
+
+            print("ohlcv_data_several_last_rows_df")
+            print(ohlcv_data_several_last_rows_df)
 
             ohlcv_data_several_last_rows_df["exchange"] = exchange
             ohlcv_data_several_last_rows_df["short_name"] = short_name
@@ -300,7 +311,7 @@ def update_ohlcv_data_for_stocks(list_of_stock_names,
 
         except:
             traceback.print_exc()
-        print(f"{stock_name} is number {number_of_stock+1} out of {len(list_of_stock_names)-1}")
+        print(f"{stock_name} is number {number_of_stock+1} out of {len(list_of_stock_names)}")
         print(type(ohlcv_data_several_last_rows_df))
         print ( "ohlcv_data_several_last_rows_df" )
         print ( ohlcv_data_several_last_rows_df.tail(5).to_string() )

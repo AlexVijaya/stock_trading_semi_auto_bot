@@ -118,9 +118,17 @@ def get_all_time_low_from_ohlcv_table(engine_for_ohlcv_data_for_stocks,
     return all_time_low_in_stock, table_with_ohlcv_data_df
 
 
+# def drop_table(table_name, engine):
+#     engine.execute(
+#         f"DROP TABLE IF EXISTS {table_name};")
+
+from sqlalchemy import text
+
 def drop_table(table_name, engine):
-    engine.execute(
-        f"DROP TABLE IF EXISTS {table_name};")
+    conn = engine.connect()
+    query = text(f"DROP TABLE IF EXISTS {table_name}")
+    conn.execute(query)
+    conn.close()
 
 
 def get_last_close_price_of_asset(ohlcv_table_df):

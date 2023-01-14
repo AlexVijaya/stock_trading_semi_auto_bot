@@ -66,13 +66,13 @@ def create_string_for_output_to_file_for_stock_rebound_from_atl(stock_name,
                                                timestamp_of_bpu2_without_time):
     stop_loss = atl - (advanced_atr * 0.05)
     calculated_backlash_from_advanced_atr = advanced_atr * 0.05
-    buy_limit = atl + (advanced_atr * 0.5)
-    take_profit_3_to_1 = buy_limit + (advanced_atr * 0.5) * 3
-    take_profit_4_to_1 = buy_limit + (advanced_atr * 0.5) * 4
+    buy_order = atl + (advanced_atr * 0.5)
+    take_profit_3_to_1 = buy_order + (advanced_atr * 0.5) * 3
+    take_profit_4_to_1 = buy_order + (advanced_atr * 0.5) * 4
 
     stop_loss = round(stop_loss, 3)
     calculated_backlash_from_advanced_atr = round(calculated_backlash_from_advanced_atr, 3)
-    buy_limit = round(buy_limit, 3)
+    buy_order = round(buy_order, 3)
     take_profit_3_to_1 = round(take_profit_3_to_1, 3)
     take_profit_4_to_1 = round(take_profit_4_to_1, 3)
 
@@ -83,7 +83,7 @@ def create_string_for_output_to_file_for_stock_rebound_from_atl(stock_name,
     close_of_bpu2 = round(close_of_bpu2, 3)
 
 
-    string_for_output=f"Инструмент = {stock_name} , модель = Отбой от ATL, ATL={atl}, ATR({advanced_atr_over_this_period})={advanced_atr}, люфт={calculated_backlash_from_advanced_atr}, допустимый_люфт={acceptable_backlash}, отложенный_ордер={buy_limit}, расчетный_SL={stop_loss}, TP(3/1)={take_profit_3_to_1}, TP(4/1)={take_profit_4_to_1}, low_of_bsu={low_of_bsu}, low_of_bpu1={low_of_bpu1}, low_of_bpu2={low_of_bpu2}, close_of_bpu2={close_of_bpu2}, дата_бсу={timestamp_of_bsu_without_time}, дата_бпу1={timestamp_of_bpu1_without_time}, дата_бпу2={timestamp_of_bpu2_without_time}\n\n"
+    string_for_output=f"Инструмент = {stock_name} , модель = Отбой от ATL, ATL={atl}, ATR({advanced_atr_over_this_period})={advanced_atr}, люфт={calculated_backlash_from_advanced_atr}, допустимый_люфт={acceptable_backlash}, отложенный_ордер={buy_order}, расчетный_SL={stop_loss}, TP(3/1)={take_profit_3_to_1}, TP(4/1)={take_profit_4_to_1}, low_of_bsu={low_of_bsu}, low_of_bpu1={low_of_bpu1}, low_of_bpu2={low_of_bpu2}, close_of_bpu2={close_of_bpu2}, дата_бсу={timestamp_of_bsu_without_time}, дата_бпу1={timestamp_of_bpu1_without_time}, дата_бпу2={timestamp_of_bpu2_without_time}\n\n"
 
 
     return string_for_output
@@ -150,9 +150,17 @@ def get_all_time_low_from_ohlcv_table(engine_for_ohlcv_data_for_stocks,
 
     return all_time_low_in_stock, table_with_ohlcv_data_df
 
-def drop_table(table_name,engine):
-    engine.execute (
-        f"DROP TABLE IF EXISTS {table_name};" )
+# def drop_table(table_name,engine):
+#     engine.execute (
+#         f"DROP TABLE IF EXISTS {table_name};" )
+
+from sqlalchemy import text
+
+def drop_table(table_name, engine):
+    conn = engine.connect()
+    query = text(f"DROP TABLE IF EXISTS {table_name}")
+    conn.execute(query)
+    conn.close()
 
 def get_last_close_price_of_asset(ohlcv_table_df):
     last_close_price=ohlcv_table_df["close"].iat[-1]
@@ -541,11 +549,12 @@ def check_if_bsu_bpu1_bpu2_do_not_close_into_ath_level(acceptable_backlash , atr
 
 def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is_stored,
                                           db_where_levels_formed_by_rebound_level_will_be,
-                                               table_where_ticker_which_had_rebound_situations_from_ath_will_be ,
-                                               table_where_ticker_which_had_rebound_situations_from_atl_will_be,
-                                               acceptable_backlash ,
-                                               atr_over_this_period,advanced_atr_over_this_period
-                                               ):
+                                          table_where_ticker_which_had_rebound_situations_from_ath_will_be ,
+                                          table_where_ticker_which_had_rebound_situations_from_atl_will_be,
+                                          acceptable_backlash ,
+                                          atr_over_this_period,advanced_atr_over_this_period,
+                                          count_min_volume_over_this_many_days
+                                          ):
 
 
     engine_for_ohlcv_data_for_stocks , \
@@ -841,28 +850,53 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                                                                     high_of_bsu , high_of_bpu1 , high_of_bpu2 ,
                                                                     low_of_bsu , low_of_bpu1 , low_of_bpu2 )
 
-                if not asset_not_open_into_level_bool and not asset_not_close_into_level_bool:
+            
+                if not asset_not_open_into_level_bool:
+                    continue
+
+                if not asset_not_close_into_level_bool:
                     continue
 
 
                 if advanced_atr>0:
                     backlash = abs ( true_low_of_bpu2 - all_time_low )
                     if (backlash <= advanced_atr * acceptable_backlash) and ( low_of_bpu2 - all_time_low )>=0:
-                        
+                        stop_loss = all_time_low - (advanced_atr * 0.05)
+                        calculated_backlash_from_advanced_atr = advanced_atr * 0.05
+                        buy_order = all_time_low + (advanced_atr * 0.5)
+                        take_profit_3_to_1 = buy_order + (advanced_atr * 0.5) * 3
+                        take_profit_4_to_1 = buy_order + (advanced_atr * 0.5) * 4
+
+                        stop_loss = round(stop_loss, 3)
+                        calculated_backlash_from_advanced_atr = round(calculated_backlash_from_advanced_atr, 3)
+                        buy_order = round(buy_order, 3)
+                        take_profit_3_to_1 = round(take_profit_3_to_1, 3)
+                        take_profit_4_to_1 = round(take_profit_4_to_1, 3)
+
+                        advanced_atr = round(advanced_atr, 3)
+                        low_of_bsu = round(low_of_bsu, 3)
+                        low_of_bpu1 = round(low_of_bpu1, 3)
+                        low_of_bpu2 = round(low_of_bpu2, 3)
+                        close_of_bpu2 = round(close_of_bpu2, 3)
 
                         list_with_tickers_ready_for_rebound_off_atl.append ( stock_name )
+                        
+                        
+                        
+                        
                         print("list_with_tickers_ready_for_rebound_off_atl")
                         print(list_with_tickers_ready_for_rebound_off_atl)
                         df_with_level_atr_bpu_bsu_etc = pd.DataFrame ()
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "ticker"] = stock_name
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "exchange"] = exchange
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "short_name"] = short_name
+                        df_with_level_atr_bpu_bsu_etc.loc[0, "model"] = "ОТБОЙ_от_ATL"
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "atl"] = all_time_low
                         # df_with_level_atr_bpu_bsu_etc.loc[0 , "atr"] = atr
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "advanced_atr"] = advanced_atr
-                        df_with_level_atr_bpu_bsu_etc.loc[0 , "atr_over_this_period"] = atr_over_this_period
+                        # df_with_level_atr_bpu_bsu_etc.loc[0 , "atr_over_this_period"] = int(atr_over_this_period)
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "advanced_atr_over_this_period"] =\
-                            advanced_atr_over_this_period
+                            int(advanced_atr_over_this_period)
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "backlash"] = backlash
                         df_with_level_atr_bpu_bsu_etc.loc[0, "backlash_%ATR"] = backlash / advanced_atr
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "acceptable_backlash"] = acceptable_backlash
@@ -875,9 +909,9 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "true_low_of_bpu2"] = true_low_of_bpu2
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "close_of_bpu2"] = close_of_bpu2
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "open_of_tvx"] = open_of_tvx
-                        df_with_level_atr_bpu_bsu_etc.loc[0 , "volume_of_bsu"] = volume_of_bsu
-                        df_with_level_atr_bpu_bsu_etc.loc[0 , "volume_of_bpu1"] = volume_of_bpu1
-                        df_with_level_atr_bpu_bsu_etc.loc[0 , "volume_of_bpu2"] = volume_of_bpu2
+                        df_with_level_atr_bpu_bsu_etc.loc[0 , "volume_of_bsu"] = int(volume_of_bsu)
+                        df_with_level_atr_bpu_bsu_etc.loc[0 , "volume_of_bpu1"] = int(volume_of_bpu1)
+                        df_with_level_atr_bpu_bsu_etc.loc[0 , "volume_of_bpu2"] = int(volume_of_bpu2)
 
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "timestamp_of_bsu"] = timestamp_of_bsu
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "timestamp_of_bpu1"] = timestamp_of_bpu1
@@ -886,27 +920,38 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "human_time_of_bpu1"] = timestamp_of_bpu1_with_time
                         df_with_level_atr_bpu_bsu_etc.loc[0 , "human_time_of_bpu2"] = timestamp_of_bpu2_with_time
 
+                        
+                        df_with_level_atr_bpu_bsu_etc.loc[0, "stop_loss"] = stop_loss
+                        df_with_level_atr_bpu_bsu_etc.loc[0, "buy_order"] = buy_order
+                        df_with_level_atr_bpu_bsu_etc.loc[0, "приемлемый_люфт"] = calculated_backlash_from_advanced_atr
+                        df_with_level_atr_bpu_bsu_etc.loc[0, "take_profit_3_to_1"] = take_profit_3_to_1
+                        df_with_level_atr_bpu_bsu_etc.loc[0, "take_profit_4_to_1"] = take_profit_4_to_1
+                        df_with_level_atr_bpu_bsu_etc.loc[
+                            0, "min_volume_over_last_n_days"] = int(table_with_ohlcv_data_df['volume'].tail(
+                            count_min_volume_over_this_many_days).min())
+                        df_with_level_atr_bpu_bsu_etc.loc[
+                            0, "count_min_volume_over_this_many_days"] = int(count_min_volume_over_this_many_days)
 
 
-
-
+                        print("df_with_level_atr_bpu_bsu_etc")
+                        print(df_with_level_atr_bpu_bsu_etc.to_string())
                         df_with_level_atr_bpu_bsu_etc.to_sql (
                             table_where_ticker_which_had_rebound_situations_from_atl_will_be ,
                             engine_for_db_where_levels_formed_by_rebound_level_will_be ,
                             if_exists = 'append' )
-                        string_for_output=create_string_for_output_to_file_for_stock_rebound_from_atl(stock_name,
-                                               all_time_low,
-                                               advanced_atr,
-                                               advanced_atr_over_this_period,
-                                               low_of_bsu,
-                                               low_of_bpu1,
-                                               low_of_bpu2,
-                                               close_of_bpu2,
-                                               timestamp_of_bsu_without_time,
-                                               timestamp_of_bpu1_without_time,
-                                               timestamp_of_bpu2_without_time)
-                        create_text_file_and_writ_text_to_it(string_for_output,
-                                                             'current_rebound_breakout_and_false_breakout')
+                        # string_for_output=create_string_for_output_to_file_for_stock_rebound_from_atl(stock_name,
+                        #                        all_time_low,
+                        #                        advanced_atr,
+                        #                        advanced_atr_over_this_period,
+                        #                        low_of_bsu,
+                        #                        low_of_bpu1,
+                        #                        low_of_bpu2,
+                        #                        close_of_bpu2,
+                        #                        timestamp_of_bsu_without_time,
+                        #                        timestamp_of_bpu1_without_time,
+                        #                        timestamp_of_bpu2_without_time)
+                        # create_text_file_and_writ_text_to_it(string_for_output,
+                        #                                      'current_rebound_breakout_and_false_breakout')
 
 ###############################################
 
@@ -915,13 +960,13 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
             print(e,f'error in {stock_name}')
 
 
-    # string_for_output = f"Список инструментов, которые сформировали модель ОТБОЙ ОТ ИСТОРИЧЕСКОГО МИНИМУМА:\n" \
-    #                     f"" \
-    #                     f"{list_with_tickers_ready_for_rebound_off_atl}\n\n"
+    string_for_output = f"Список инструментов, которые сформировали модель ОТБОЙ ОТ ИСТОРИЧЕСКОГО МИНИМУМА:\n" \
+                        f"" \
+                        f"{list_with_tickers_ready_for_rebound_off_atl}\n\n"
     # Use the function to create a text file with the text
     # in the subdirectory "current_rebound_breakout_and_false_breakout"
-    # create_text_file_and_writ_text_to_it(string_for_output,
-    #                                      'current_rebound_breakout_and_false_breakout')
+    create_text_file_and_writ_text_to_it(string_for_output,
+                                         'current_rebound_breakout_and_false_breakout')
     print ( "list_with_tickers_ready_for_rebound_off_atl" )
     print ( list_with_tickers_ready_for_rebound_off_atl )
     print ( "list_with_tickers_ready_for_rebound_off_ath" )
@@ -936,7 +981,7 @@ if __name__=="__main__":
     db_where_levels_formed_by_rebound_level_will_be="levels_formed_by_highs_and_lows_for_stocks"
     table_where_ticker_which_had_rebound_situations_from_ath_will_be = "current_rebound_situations_from_ath"
     table_where_ticker_which_had_rebound_situations_from_atl_will_be = "current_rebound_situations_from_atl"
-
+    count_min_volume_over_this_many_days=30
     if count_only_round_rebound_level:
         db_where_levels_formed_by_rebound_level_will_be="round_levels_formed_by_highs_and_lows_for_stocks"
     #0.05 means 5%
@@ -944,13 +989,14 @@ if __name__=="__main__":
     atr_over_this_period=5
     advanced_atr_over_this_period=30
     search_for_tickers_with_rebound_situations(
-                                              db_where_ohlcv_data_for_stocks_is_stored,
-                                              db_where_levels_formed_by_rebound_level_will_be,
-                                              table_where_ticker_which_had_rebound_situations_from_ath_will_be,
-                                                table_where_ticker_which_had_rebound_situations_from_atl_will_be,
-                                                acceptable_backlash,
-                                                atr_over_this_period,
-                                            advanced_atr_over_this_period)
+                                            db_where_ohlcv_data_for_stocks_is_stored,
+                                            db_where_levels_formed_by_rebound_level_will_be,
+                                            table_where_ticker_which_had_rebound_situations_from_ath_will_be,
+                                            table_where_ticker_which_had_rebound_situations_from_atl_will_be,
+                                            acceptable_backlash,
+                                            atr_over_this_period,
+                                            advanced_atr_over_this_period,
+                                            count_min_volume_over_this_many_days)
 
     end_time = time.time ()
     overall_time = end_time - start_time

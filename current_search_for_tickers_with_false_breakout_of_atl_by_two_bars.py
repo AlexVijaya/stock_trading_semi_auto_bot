@@ -118,9 +118,17 @@ def get_all_time_low_from_ohlcv_table(engine_for_ohlcv_data_for_stocks,
     return all_time_low_in_stock, table_with_ohlcv_data_df
 
 
+# def drop_table(table_name, engine):
+#     engine.execute(
+#         f"DROP TABLE IF EXISTS {table_name};")
+#
+from sqlalchemy import text
+
 def drop_table(table_name, engine):
-    engine.execute(
-        f"DROP TABLE IF EXISTS {table_name};")
+    conn = engine.connect()
+    query = text(f"DROP TABLE IF EXISTS {table_name}")
+    conn.execute(query)
+    conn.close()
 
 
 def get_last_close_price_of_asset(ohlcv_table_df):
@@ -614,14 +622,52 @@ def create_text_file_and_writ_text_to_it(text, subdirectory_name):
   # Close the file
   f.close()
 
-
-
+# def false_breakout_strategy(stock_name, atl, advanced_atr,open_of_last_all_time_low, high_of_last_all_time_low, low_of_last_all_time_low, close_of_last_all_time_low, volume_of_last_all_time_low, timestamp_of_last_all_time_low, date_of_last_ath, timestamp_of_pre_false_breakout_bar, date_of_pre_false_breakout_bar, open_of_pre_false_breakout_bar, high_of_pre_false_breakout_bar, low_of_pre_false_breakout_bar, close_of_pre_false_breakout_bar, volume_of_pre_false_breakout_bar, timestamp_of_next_day_bar_after_break_out_bar, date_of_next_day_bar_after_break_out_bar, open_of_next_day_bar_after_break_out_bar, high_of_next_day_bar_after_break_out_bar, low_of_next_day_bar_after_break_out_bar, close_of_next_day_bar_after_break_out_bar, volume_of_next_day_bar_after_break_out_bar, timestamp_of_next_day_bar_after_break_out_bar, date_of_next_day_bar_after_break_out_bar, open_of_next_day_bar_after_break_out_bar, high_of_next_day_bar_after_break_out_bar, low_of_next_day_bar_after_break_out_bar, close_of_next_day_bar_after_break_out_bar, volume_of_next_day_bar_after_break_out_bar):
+#     buy_order = atl + (advanced_atr * 0.5)
+#     technical_stop_loss = min(low_of_false_breakout_bar, low_of_second_false_breakout_bar) - (0.05 * advanced_atr)
+#     distance_between_technical_stop_loss_and_buy_order = buy_order - technical_stop_loss
+#     take_profit_when_stop_loss_is_technical_3_to_1 = buy_order + (buy_order - technical_stop_loss) * 3
+#     take_profit_when_stop_loss_is_technical_4_to_1 = buy_order + (buy_order - technical_stop_loss) * 4
+#     distance_between_technical_stop_loss_and_buy_order_in_atr = \
+#         distance_between_technical_stop_loss_and_buy_order / advanced_atr
+#     # round technical stop loss and take profit for ease of looking at
+#     buy_order = round(buy_order, 3)
+#     technical_stop_loss = round(technical_stop_loss, 3)
+#     take_profit_when_stop_loss_is_technical_3_to_1 = \
+#         round(take_profit_when_stop_loss_is_technical_3_to_1, 3)
+#     take_profit_when_stop_loss_is_technical_4_to_1 = \
+#         round(take_profit_when_stop_loss_is_technical_4_to_1, 3)
+#
+#     distance_between_technical_stop_loss_and_buy_order_in_atr = \
+#         round(distance_between_technical_stop_loss_and_buy_order_in_atr, 3)
+#
+#     advanced_atr = \
+#         round(advanced_atr, 2)
+#
+#     open_of_false_breakout_bar = round(open_of_false_breakout_bar, 3)
+#     high_of_false_breakout_bar = round(high_of_false_breakout_bar, 3)
+#     low_of_false_breakout_bar = round(low_of_false_breakout_bar, 3)
+#     close_of_false_breakout_bar = round(close_of_false_breakout_bar, 3)
+#
+#     open_of_second_false_breakout_bar = round(open_of_second_false_breakout_bar, 3)
+#     high_of_second_false_breakout_bar = round(high_of_second_false_breakout_bar, 3)
+#     low_of_second_false_breakout_bar = round(low_of_second_false_breakout_bar, 3)
+#     close_of_second_false_breakout_bar = round(close_of_second_false_breakout_bar, 3)
+#
+#     open_of_bar_before_false_breakout = round(open_of_bar_before_false_breakout, 3)
+#     high_of_bar_before_false_breakout = round(high_of_bar_before_false_breakout, 3)
+#     low_of_bar_before_false_breakout = round(low_of_bar_before_false_breakout, 3)
+#     close_of_bar_before_false_breakout = round(close_of_bar_before_false_breakout, 3)
+#
+#     string_for_output = f"Инструмент = {stock_name} , модель = Отбой от ATL, ATL={atl}, ATR({advanced_atr_over_this_period})={advanced_atr}, отложенный_ордер={buy_order}, технический_SL={technical_stop_loss}, TP_при_техническом_стопе (3/1)={take_profit_when_stop_loss_is_technical_3_to_1}, TP_при_техническом_стопе (4/1)={take_profit_when_stop_loss_is_technical_4_to_1}, расстояние от технического стопа до ордера на вход в позицию в долях ATR ={distance_between_technical_stop_loss_and_buy_order_in_atr},\n\n"
+#
+#     return string_for_output
 
 
 def search_for_tickers_with_false_breakout_situations(db_where_ohlcv_data_for_stocks_is_stored,
-                                                db_where_ticker_which_may_have_fast_false_breakout_situations,
-                                                table_where_ticker_which_may_have_fast_false_breakout_situations_from_ath_will_be,
-                                                table_where_ticker_which_may_have_fast_false_breakout_situations_from_atl_will_be,
+                                                db_where_ticker_which_may_have_false_breakout_situations,
+                                                table_where_ticker_which_may_have_false_breakout_situations_from_ath_will_be,
+                                                table_where_ticker_which_may_have_false_breakout_situations_from_atl_will_be,
                                                 advanced_atr_over_this_period,
                                                 number_of_bars_in_suppression_to_check_for_volume_acceptance,
                                                 factor_to_multiply_atr_by_to_check_suppression,
@@ -632,12 +678,12 @@ def search_for_tickers_with_false_breakout_situations(db_where_ohlcv_data_for_st
         connect_to_postres_db_without_deleting_it_first(db_where_ohlcv_data_for_stocks_is_stored)
 
     engine_for_db_where_ticker_which_may_have_false_breakout_situations, \
-        connection_to_db_where_ticker_which_may_have_fast_false_breakout_situations = \
-        connect_to_postres_db_without_deleting_it_first(db_where_ticker_which_may_have_fast_false_breakout_situations)
+        connection_to_db_where_ticker_which_may_have_false_breakout_situations = \
+        connect_to_postres_db_without_deleting_it_first(db_where_ticker_which_may_have_false_breakout_situations)
 
-    # drop_table(table_where_ticker_which_may_have_fast_false_breakout_situations_from_ath_will_be,
+    # drop_table(table_where_ticker_which_may_have_false_breakout_situations_from_ath_will_be,
     #            engine_for_db_where_ticker_which_may_have_false_breakout_situations)
-    drop_table ( table_where_ticker_which_may_have_fast_false_breakout_situations_from_atl_will_be ,
+    drop_table ( table_where_ticker_which_may_have_false_breakout_situations_from_atl_will_be ,
                  engine_for_db_where_ticker_which_may_have_false_breakout_situations )
 
     list_of_tables_in_ohlcv_db = \
@@ -987,7 +1033,7 @@ def search_for_tickers_with_false_breakout_situations(db_where_ohlcv_data_for_st
 
 
             df_with_level_atr_bpu_bsu_etc.to_sql(
-                table_where_ticker_which_may_have_fast_false_breakout_situations_from_atl_will_be,
+                table_where_ticker_which_may_have_false_breakout_situations_from_atl_will_be,
                 engine_for_db_where_ticker_which_may_have_false_breakout_situations,
                 if_exists='append')
 
@@ -1010,15 +1056,15 @@ if __name__ == "__main__":
     start_time = time.time()
     db_where_ohlcv_data_for_stocks_is_stored = "stocks_ohlcv_daily"
     count_only_round_level = False
-    db_where_ticker_which_may_have_fast_false_breakout_situations = \
+    db_where_ticker_which_may_have_false_breakout_situations = \
         "levels_formed_by_highs_and_lows_for_stocks"
-    table_where_ticker_which_may_have_fast_false_breakout_situations_from_ath_will_be = \
+    table_where_ticker_which_may_have_false_breakout_situations_from_ath_will_be = \
         "current_false_breakout_of_ath_by_two_bars"
-    table_where_ticker_which_may_have_fast_false_breakout_situations_from_atl_will_be = \
+    table_where_ticker_which_may_have_false_breakout_situations_from_atl_will_be = \
         "current_false_breakout_of_atl_by_two_bars"
 
     if count_only_round_level:
-        db_where_ticker_which_may_have_fast_false_breakout_situations = \
+        db_where_ticker_which_may_have_false_breakout_situations = \
             "round_levels_formed_by_highs_and_lows_for_stocks"
     # 0.05 means 5%
 
@@ -1029,9 +1075,9 @@ if __name__ == "__main__":
     count_min_volume_over_this_many_days = 30
     search_for_tickers_with_false_breakout_situations(
         db_where_ohlcv_data_for_stocks_is_stored,
-        db_where_ticker_which_may_have_fast_false_breakout_situations,
-        table_where_ticker_which_may_have_fast_false_breakout_situations_from_ath_will_be,
-        table_where_ticker_which_may_have_fast_false_breakout_situations_from_atl_will_be,
+        db_where_ticker_which_may_have_false_breakout_situations,
+        table_where_ticker_which_may_have_false_breakout_situations_from_ath_will_be,
+        table_where_ticker_which_may_have_false_breakout_situations_from_atl_will_be,
         advanced_atr_over_this_period,
         number_of_bars_in_suppression_to_check_for_volume_acceptance,
         factor_to_multiply_atr_by_to_check_suppression, count_min_volume_over_this_many_days)

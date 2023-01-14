@@ -20,6 +20,7 @@ pdfkit = "*"
 imgkit = "*"
 wkhtmltopdf = "*"
 pyqt5 = "*"
+tk = "*"
 
 [dev-packages]
 
