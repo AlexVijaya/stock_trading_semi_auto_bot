@@ -1006,6 +1006,13 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "take_profit_when_sl_is_calculated_4_to_1"] = take_profit_when_sl_is_calculated_4_to_1
 
+            distance_between_calculated_stop_loss_and_sell_order = calculated_stop_loss - sell_order
+            distance_between_calculated_stop_loss_and_sell_order_in_atr = \
+                distance_between_calculated_stop_loss_and_sell_order / advanced_atr
+            df_with_level_atr_bpu_bsu_etc.loc[
+                0, "distance_between_calculated_stop_loss_and_sell_order_in_atr"] = \
+                distance_between_calculated_stop_loss_and_sell_order_in_atr
+
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "technical_stop_loss"] = technical_stop_loss
             df_with_level_atr_bpu_bsu_etc.loc[

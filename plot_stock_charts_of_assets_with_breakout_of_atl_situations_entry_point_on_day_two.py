@@ -587,28 +587,28 @@ def plot_ohlcv_charts_with_breakout_of_atl_situations_entry_point_next_day(name_
 
                 # plot all lines with advanced atr (stop loss is calculated)
                 calculated_stop_loss = atl + (advanced_atr * 0.05)
-                sell_stop = atl - (advanced_atr * 0.5)
-                take_profit = sell_stop - (calculated_stop_loss - sell_stop) * 3
+                sell_order = atl - (advanced_atr * 0.5)
+                take_profit = sell_order - (calculated_stop_loss - sell_order) * 3
                 # round decimals for ease of looking at
-                sell_stop = round ( sell_stop , 6 )
-                stop_loss = round ( calculated_stop_loss , 6 )
+                sell_order = round ( sell_order , 6 )
+                calculated_stop_loss = round ( calculated_stop_loss , 6 )
                 take_profit = round ( take_profit , 6 )
 
                 # plot all lines with advanced atr (stop loss is technical)
                 technical_stop_loss = high_of_breakout_bar + (0.05 * advanced_atr)
-                distance_between_technical_stop_loss_and_sell_stop = technical_stop_loss-sell_stop
-                take_profit_when_stop_loss_is_technical =sell_stop - (technical_stop_loss-sell_stop ) * 3
-                distance_between_technical_stop_loss_and_sell_stop_in_atr = \
-                    distance_between_technical_stop_loss_and_sell_stop / advanced_atr
+                distance_between_technical_stop_loss_and_sell_order = technical_stop_loss-sell_order
+                take_profit_when_stop_loss_is_technical =sell_order - (technical_stop_loss-sell_order ) * 3
+                distance_between_technical_stop_loss_and_sell_order_in_atr = \
+                    distance_between_technical_stop_loss_and_sell_order / advanced_atr
                 # round technical stop loss and take profit for ease of looking at
                 technical_stop_loss = round ( technical_stop_loss , 6 )
                 take_profit_when_stop_loss_is_technical = \
                     round ( take_profit_when_stop_loss_is_technical , 6 )
-                distance_between_technical_stop_loss_and_sell_stop_in_atr=\
-                    round(distance_between_technical_stop_loss_and_sell_stop_in_atr,6)
+                distance_between_technical_stop_loss_and_sell_order_in_atr=\
+                    round(distance_between_technical_stop_loss_and_sell_order_in_atr,6)
 
                 technical_stop_loss_possible = np.nan
-                if distance_between_technical_stop_loss_and_sell_stop < 2 * advanced_atr:
+                if distance_between_technical_stop_loss_and_sell_order < 2 * advanced_atr:
                     technical_stop_loss_possible = True
                 else:
                     technical_stop_loss_possible = False
@@ -618,19 +618,19 @@ def plot_ohlcv_charts_with_breakout_of_atl_situations_entry_point_next_day(name_
                     fig.add_hline ( y = calculated_stop_loss , row = 2 , col = 1 , line_color = "magenta" ,
                                     opacity = 0.5 )
 
-                    fig.add_hline ( y = sell_stop , row = 2 , col = 1 , line_color = "magenta" , opacity = 0.5 )
+                    fig.add_hline ( y = sell_order , row = 2 , col = 1 , line_color = "magenta" , opacity = 0.5 )
                     fig.add_hline ( y = take_profit , row = 2 , col = 1 , line_color = "magenta" )
                 else:
                     # both technical and calculated stop losses are acceptable
                     fig.add_hline ( y = calculated_stop_loss , row = 2 , col = 1 , line_color = "magenta" ,
                                     opacity = 0.5 )
 
-                    fig.add_hline ( y = sell_stop , row = 2 , col = 1 , line_color = "magenta" , opacity = 0.5 )
+                    fig.add_hline ( y = sell_order , row = 2 , col = 1 , line_color = "magenta" , opacity = 0.5 )
                     fig.add_hline ( y = take_profit , row = 2 , col = 1 , line_color = "magenta" )
                     fig.add_hline ( y = technical_stop_loss , row = 2 , col = 1 , line_color = "green" ,
                                     opacity = 0.5 )
 
-                    # fig.add_hline ( y = sell_stop , row = 2 , col = 1 , line_color = "green" , opacity = 0.5 )
+                    # fig.add_hline ( y = sell_order , row = 2 , col = 1 , line_color = "green" , opacity = 0.5 )
                     fig.add_hline ( y = take_profit_when_stop_loss_is_technical , row = 2 , col = 1 ,
                                     line_color = "green" )
 
@@ -655,10 +655,10 @@ def plot_ohlcv_charts_with_breakout_of_atl_situations_entry_point_next_day(name_
                                          f" | advanced_atr({advanced_atr_over_this_period})={advanced_atr}"
                                          f" | calculated_SL={calculated_stop_loss}" 
                                          f" | technical_SL={technical_stop_loss}"+ "<br>"
-                                         f" | sell_stop={sell_stop}"
+                                         f" | sell_order={sell_order}"
                                          f" | TP_(SL_is_calculated)={take_profit}"
                                          f" | TP_(SL_is_technical)={take_profit_when_stop_loss_is_technical}"
-                                         f" | technical_SL-sell_stop={distance_between_technical_stop_loss_and_sell_stop_in_atr} ATR"
+                                         f" | technical_SL-sell_order={distance_between_technical_stop_loss_and_sell_order_in_atr} ATR"
                                          ,
                                          xref = "x domain" , yref = "y domain" ,
                                          font = dict (
