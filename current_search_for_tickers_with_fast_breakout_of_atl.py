@@ -320,7 +320,7 @@ def calculate_atr_without_paranormal_bars_from_numpy_array(atr_over_this_period,
     number_of_rows_in_numpy_array=len(numpy_array_slice)
     array_of_true_ranges=False
     try:
-        if (row_number_last_bar - number_of_rows_in_numpy_array) < 0:
+        if (row_number_last_bar+1 - number_of_rows_in_numpy_array) < 0:
             array_of_true_ranges=numpy_array_slice[:,2]-numpy_array_slice[:,3]
             percentile_20 = np.percentile ( array_of_true_ranges , 20 )
             percentile_80 = np.percentile ( array_of_true_ranges , 80 )

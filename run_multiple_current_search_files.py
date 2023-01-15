@@ -77,6 +77,8 @@ def run_multiple_search_current_rebound_breakout_false_breakout_situations():
              'not_in_hindsight_search_for_tickers_with_atl_equal_to_limit_level.py',
              'current_search_for_tickers_approaching_ath_confirmed_one_or_more_times.py',
              'current_search_for_tickers_approaching_atl_confirmed_one_or_more_times.py',
+             'check_if_asset_is_approaching_its_ath_closer_than_50percent_atr.py',
+             'check_if_asset_is_approaching_its_atl_closer_than_50percent_atr.py',
              'check_if_asset_is_approaching_its_atl.py',
              'check_if_asset_is_approaching_its_ath.py']
 

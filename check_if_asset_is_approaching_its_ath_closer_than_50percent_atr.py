@@ -1,4 +1,4 @@
-
+from statistics import mean
 import pandas as pd
 import os
 import time
@@ -17,6 +17,54 @@ from sqlalchemy import MetaData
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
 from sqlalchemy.ext.declarative import declarative_base
+
+def calculate_atr_without_paranormal_bars_from_numpy_array(atr_over_this_period,
+                  numpy_array_slice,
+                  row_number_last_bar):
+    list_of_true_ranges = []
+    advanced_atr=False
+    percentile_20=False
+    percentile_80=False
+    number_of_rows_in_numpy_array=len(numpy_array_slice)
+    array_of_true_ranges=False
+    print("numpy_array_slice")
+    print(numpy_array_slice)
+    print("atr_over_this_period")
+    print(atr_over_this_period)
+    print("row_number_last_bar")
+    print(row_number_last_bar)
+    try:
+        if (row_number_last_bar+1 - number_of_rows_in_numpy_array) < 0:
+            array_of_true_ranges=numpy_array_slice[:,2]-numpy_array_slice[:,3]
+            percentile_20 = np.percentile ( array_of_true_ranges , 20 )
+            percentile_80 = np.percentile ( array_of_true_ranges , 80 )
+        else:
+            array_of_true_ranges=numpy_array_slice[-atr_over_this_period-1:,2]-\
+                                 numpy_array_slice[-atr_over_this_period-1:,3]
+
+            percentile_20 = np.percentile ( array_of_true_ranges , 20 )
+            percentile_80 = np.percentile ( array_of_true_ranges , 80 )
+            print("percentile_80")
+            print ( percentile_80 )
+            print ( "percentile_20" )
+            print ( percentile_20 )
+
+
+
+    except:
+        traceback.print_exc()
+    print("array_of_true_ranges")
+    print(array_of_true_ranges)
+    list_of_non_rejected_true_ranges = []
+    for true_range_in_array in array_of_true_ranges:
+
+        if true_range_in_array >= percentile_20 and true_range_in_array <= percentile_80:
+            list_of_non_rejected_true_ranges.append ( true_range_in_array )
+    print("list_of_non_rejected_true_ranges")
+    print ( list_of_non_rejected_true_ranges )
+    advanced_atr = mean ( list_of_non_rejected_true_ranges )
+
+    return advanced_atr
 
 
 
@@ -94,8 +142,8 @@ def get_all_time_high_from_ohlcv_table(engine_for_ohlcv_data_for_stocks,
     table_with_ohlcv_data_df = \
         pd.read_sql_query ( f'''select * from "{table_with_ohlcv_table}"''' ,
                             engine_for_ohlcv_data_for_stocks )
-    print("table_with_ohlcv_data_df")
-    print ( table_with_ohlcv_data_df )
+    # print("table_with_ohlcv_data_df")
+    # print ( table_with_ohlcv_data_df )
 
     all_time_high_in_stock=table_with_ohlcv_data_df["high"].max()
     print ( "all_time_high_in_stock" )
@@ -155,7 +203,7 @@ def create_text_file_and_writ_text_to_it(text, subdirectory_name):
 
 
 
-def check_if_asset_is_approaching_its_ath(percentage_between_ath_and_closing_price,
+def check_if_asset_is_approaching_its_ath(atr_over_this_period,
                                           db_where_ohlcv_data_for_stocks_is_stored,
                                           count_only_round_ath,
                                           db_where_levels_formed_by_ath_will_be,
@@ -193,6 +241,14 @@ def check_if_asset_is_approaching_its_ath(percentage_between_ath_and_closing_pri
             get_all_time_high_from_ohlcv_table ( engine_for_ohlcv_data_for_stocks ,
                                             stock_name )
 
+        calculate_volume_over_this_period = 30
+        min_volume_over_n_days = min(table_with_ohlcv_data_df["volume"].tail(calculate_volume_over_this_period))
+        print("min_volume_over_n_days")
+        print(min_volume_over_n_days)
+        if min_volume_over_n_days < 750000:
+            continue
+
+
         if count_only_round_ath==True:
             level_is_round_bool=find_if_level_is_round ( all_time_high_in_stock )
             if not level_is_round_bool:
@@ -203,16 +259,34 @@ def check_if_asset_is_approaching_its_ath(percentage_between_ath_and_closing_pri
             last_close_price=get_last_close_price_of_asset ( table_with_ohlcv_data_df )
         except:
             traceback.print_exc()
-        print("last_close_price")
-        print ( last_close_price)
-        distance_in_percent_to_ath_from_close_price=\
-            (all_time_high_in_stock-last_close_price)/all_time_high_in_stock
-        if distance_in_percent_to_ath_from_close_price <= percentage_between_ath_and_closing_price/100.0:
-            print(f"last closing price={last_close_price} is"
-                  f" within {percentage_between_ath_and_closing_price}% range to ath={all_time_high_in_stock}")
+
+
+
+        last_five_years_of_data = table_with_ohlcv_data_df.tail(252 * 5)
+        last_five_years_of_data_numpy_array = last_five_years_of_data.to_numpy()
+        last_bar_number = last_five_years_of_data.index[-1]
+        advanced_atr = \
+            calculate_atr_without_paranormal_bars_from_numpy_array(advanced_atr_over_this_period,
+                                                                   last_five_years_of_data_numpy_array,
+                                                                   last_bar_number)
+
+        distance_from_last_close_price_to_ath=all_time_high_in_stock-last_close_price
+        if distance_from_last_close_price_to_ath<=advanced_atr*0.5:
+            # print(f"last closing price={last_close_price} is"
+            #       f" within {percentage_between_ath_and_closing_price}% range to ath={all_time_high_in_stock}")
             list_of_assets_with_last_close_close_to_ath.append(stock_name)
-            print("list_of_assets_with_last_close_close_to_ath")
+            print(f"list_of_assets_with_last_close_closer_to_ath_than_50%ATR({advanced_atr_over_this_period})")
             print ( list_of_assets_with_last_close_close_to_ath )
+
+            print(f"last_close_price_for_stock={stock_name}")
+            print(last_close_price)
+            print(f"advanced_atr_for_stock={stock_name}")
+            print(advanced_atr)
+            print(f"all_time_high_in_stock_for_stock={stock_name}")
+            print(all_time_high_in_stock)
+            print(f"distance_from_last_close_price_to_ath_in_stock_for_stock={stock_name}")
+            print(distance_from_last_close_price_to_ath)
+
             df_where_high_equals_ath=\
                 table_with_ohlcv_data_df[table_with_ohlcv_data_df["high"]==all_time_high_in_stock]
             print ( "df_where_high_equals_ath" )
@@ -243,8 +317,8 @@ def check_if_asset_is_approaching_its_ath(percentage_between_ath_and_closing_pri
 
     levels_formed_by_ath_df.reset_index(inplace = True)
     string_for_output=f"\nСписок инструментов, в которых расстояние от " \
-                      "цены закрытия до цены исторического максимума <10%:\n" \
-                      f"{list_of_assets_with_last_close_close_to_ath}\n"
+                      f"цены закрытия до цены исторического максимума <50% ATR({advanced_atr_over_this_period}):\n" \
+                      f"{list_of_assets_with_last_close_close_to_ath}"
     # Use the function to create a text file with the text
     # in the subdirectory "current_rebound_breakout_and_false_breakout"
     create_text_file_and_writ_text_to_it(string_for_output, 'current_rebound_breakout_and_false_breakout')
@@ -268,7 +342,8 @@ if __name__=="__main__":
     if count_only_round_ath:
         db_where_levels_formed_by_ath_will_be="round_levels_formed_by_highs_and_lows_for_stocks"
     percentage_between_ath_and_closing_price=10
-    check_if_asset_is_approaching_its_ath(percentage_between_ath_and_closing_price,
+    advanced_atr_over_this_period=30
+    check_if_asset_is_approaching_its_ath(advanced_atr_over_this_period,
                                               db_where_ohlcv_data_for_stocks_is_stored,
                                               count_only_round_ath,
                                               db_where_levels_formed_by_ath_will_be,
