@@ -48,7 +48,7 @@ def get_file_name_for_deletion(subdirectory_name='current_rebound_breakout_and_f
     today = datetime.datetime.now().strftime('%Y-%m-%d')
 
     # Create the file path by combining the subdirectory and the file name (today's date)
-    file_path = os.path.join(subdirectory_path, today + '.txt')
+    file_path = os.path.join(subdirectory_path, "stocks_" + today + '.txt')
     return file_path
 
 

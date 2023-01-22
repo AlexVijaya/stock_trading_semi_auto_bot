@@ -180,7 +180,7 @@ def create_text_file_and_writ_text_to_it(text, subdirectory_name):
   today = datetime.datetime.now().strftime('%Y-%m-%d')
 
   # Create the file path by combining the subdirectory and the file name (today's date)
-  file_path = os.path.join(subdirectory_path, today + '.txt')
+  file_path = os.path.join(subdirectory_path, "stocks_" + today + '.txt')
 
   # Check if the file exists
   if not os.path.exists(file_path):
@@ -329,8 +329,8 @@ def check_if_asset_is_approaching_its_atl(advanced_atr_over_this_period,
 
 
     levels_formed_by_atl_df.reset_index(inplace = True)
-    string_for_output = f"Список инструментов, в которых расстояние от " \
-                        f"цены закрытия до цены исторического минимума <50% ATR({advanced_atr_over_this_period}):\n\n" \
+    string_for_output = f"\nСписок инструментов, в которых расстояние от " \
+                        f"цены закрытия до цены исторического минимума <50% ATR({advanced_atr_over_this_period}):\n" \
                         f"{list_of_assets_with_last_close_close_to_atl}"
 
     # Use the function to create a text file with the text

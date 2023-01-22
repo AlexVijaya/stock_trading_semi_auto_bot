@@ -530,7 +530,7 @@ def create_text_file_and_writ_text_to_it(text, subdirectory_name):
   today = datetime.datetime.now().strftime('%Y-%m-%d')
 
   # Create the file path by combining the subdirectory and the file name (today's date)
-  file_path = os.path.join(subdirectory_path, today + '.txt')
+  file_path = os.path.join(subdirectory_path, "stocks_" + today + '.txt')
 
   # Check if the file exists
   if not os.path.exists(file_path):
