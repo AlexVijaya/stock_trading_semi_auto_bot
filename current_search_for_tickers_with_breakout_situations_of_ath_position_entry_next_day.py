@@ -238,6 +238,31 @@ def get_volume_of_bpu2(truncated_high_and_low_table_with_ohlcv_data_df,row_numbe
         traceback.print_exc ()
     return volume_bpu2
 
+def print_df_to_file(dataframe, subdirectory_name):
+    series = dataframe.squeeze()
+    # get today's date
+    date_today = datetime.datetime.now().strftime("%Y-%m-%d")
+
+    # create file name
+    file_name = f"atr_level_sl_tp_for_stocks_{date_today}.txt"
+
+    # create directory if it doesn't exist
+    if not os.path.exists(subdirectory_name):
+        os.makedirs(subdirectory_name)
+
+    with open(os.path.join(subdirectory_name, file_name), "a") as file:
+        # print horizontal line
+        file.write("+" * 100 + "\n")
+
+        # print series to file
+        file.write(str(series))
+
+        # print horizontal line again
+        file.write("\n" + "+" * 100)
+
+    print(f"Series appended to {file_name} in {subdirectory_name}")
+
+
 def calculate_atr(atr_over_this_period,
                   truncated_high_and_low_table_with_ohlcv_data_df,
                   row_number_of_bpu1):
@@ -655,8 +680,8 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             print ( f'{stock_name} is'
                     f' number {counter} out of {len ( list_of_tables_in_ohlcv_db )}\n' )
 
-            # if stock_name!="CAT":
-            #     continue
+            if stock_name!="CAT":
+                continue
 
 
 
@@ -885,6 +910,7 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
                 0, "exchange"] = exchange
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "short_name"] = short_name
+            df_with_level_atr_bpu_bsu_etc.loc[0, "model"] = "пробой_ath_вход_на_следующий_день_после_пробоя"
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "ath"] = all_time_high
             df_with_level_atr_bpu_bsu_etc.loc[
@@ -953,16 +979,8 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
                 engine_for_db_where_ticker_which_may_have_fast_breakout_situations,
                 if_exists='append')
 
-
-
-
-
-
-
-
-
-
-
+            print_df_to_file(df_with_level_atr_bpu_bsu_etc,
+                             'current_rebound_breakout_and_false_breakout')
 
 
         except:
