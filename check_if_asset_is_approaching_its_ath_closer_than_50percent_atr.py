@@ -17,7 +17,18 @@ from sqlalchemy import MetaData
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
 from sqlalchemy.ext.declarative import declarative_base
+from get_list_of_all_us_stock_tickers_on_gerchik_and_co import get_list_of_us_stock_tickers_from_gerchik_and_co
 
+def append_gerchik_and_co_mark_to_stock_and_add_it_to_list_if_stock_has_cfd_on_gerchik_and_co(
+        stock_name, list_of_interesting_stocks):
+    df_of_tickers_available_on_gerchik_and_co, list_of_tickers_available_on_gerchik_and_co =\
+        get_list_of_us_stock_tickers_from_gerchik_and_co()
+    if stock_name in list_of_tickers_available_on_gerchik_and_co:
+        stock_name_with_gerchik_and_co_mark = stock_name + "_(CFD_on_Gerchik&Co)"
+        list_of_interesting_stocks.append(stock_name_with_gerchik_and_co_mark)
+    else:
+        list_of_interesting_stocks.append(stock_name)
+    return list_of_interesting_stocks
 def calculate_atr_without_paranormal_bars_from_numpy_array(atr_over_this_period,
                   numpy_array_slice,
                   row_number_last_bar):
@@ -274,7 +285,15 @@ def check_if_asset_is_approaching_its_ath(atr_over_this_period,
         if distance_from_last_close_price_to_ath<=advanced_atr*0.5:
             # print(f"last closing price={last_close_price} is"
             #       f" within {percentage_between_ath_and_closing_price}% range to ath={all_time_high_in_stock}")
-            list_of_assets_with_last_close_close_to_ath.append(stock_name)
+            # list_of_assets_with_last_close_close_to_ath.append(stock_name)
+            try:
+                #add Gerchik_and_Co mark if it is available as cfd
+                list_of_assets_with_last_close_close_to_ath=\
+                    append_gerchik_and_co_mark_to_stock_and_add_it_to_list_if_stock_has_cfd_on_gerchik_and_co(
+                    stock_name, list_of_assets_with_last_close_close_to_ath)
+            except:
+                traceback.print_exc()
+
             print(f"list_of_assets_with_last_close_closer_to_ath_than_50%ATR({advanced_atr_over_this_period})")
             print ( list_of_assets_with_last_close_close_to_ath )
 

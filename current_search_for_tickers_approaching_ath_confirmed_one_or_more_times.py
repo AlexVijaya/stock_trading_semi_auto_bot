@@ -18,7 +18,18 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
 from sqlalchemy.ext.declarative import declarative_base
 
+from get_list_of_all_us_stock_tickers_on_gerchik_and_co import get_list_of_us_stock_tickers_from_gerchik_and_co
 
+def append_gerchik_and_co_mark_to_stock_and_add_it_to_list_if_stock_has_cfd_on_gerchik_and_co(
+        stock_name, list_of_interesting_stocks):
+    df_of_tickers_available_on_gerchik_and_co, list_of_tickers_available_on_gerchik_and_co =\
+        get_list_of_us_stock_tickers_from_gerchik_and_co()
+    if stock_name in list_of_tickers_available_on_gerchik_and_co:
+        stock_name_with_gerchik_and_co_mark = stock_name + "_(CFD_on_Gerchik&Co)"
+        list_of_interesting_stocks.append(stock_name_with_gerchik_and_co_mark)
+    else:
+        list_of_interesting_stocks.append(stock_name)
+    return list_of_interesting_stocks
 
 def find_if_level_is_round(level):
     level = str ( level )
@@ -855,7 +866,14 @@ def search_for_tickers_with_rebound_situations(db_where_ohlcv_data_for_stocks_is
                                                                                  timestamp_of_bsu_with_time,
                                                   timestamp_of_bpu1_with_time,min_volume_over_last_n_days,min_volume_over_this_many_last_days)
 
-                list_of_stock_tickers_with_last_high_equal_to_ath_and_equal_to_limit_level.append(stock_name)
+                # list_of_stock_tickers_with_last_high_equal_to_ath_and_equal_to_limit_level.append(stock_name)
+                try:
+                    # add Gerchik_and_Co mark if it is available as cfd
+                    list_of_stock_tickers_with_last_high_equal_to_ath_and_equal_to_limit_level = \
+                        append_gerchik_and_co_mark_to_stock_and_add_it_to_list_if_stock_has_cfd_on_gerchik_and_co(
+                            stock_name, list_of_stock_tickers_with_last_high_equal_to_ath_and_equal_to_limit_level)
+                except:
+                    traceback.print_exc()
                 df_with_level_atr_bpu_bsu_etc.to_sql(
                     table_where_ticker_which_had_ath_equal_to_limit_level,
                     engine_for_db_where_levels_formed_by_ath_equal_to_limit_level_will_be,

@@ -17,8 +17,43 @@ from sqlalchemy import MetaData
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
 from sqlalchemy.ext.declarative import declarative_base
+from get_list_of_all_us_stock_tickers_on_gerchik_and_co import get_list_of_us_stock_tickers_from_gerchik_and_co
 
 
+def append_gerchik_and_co_mark_to_stock_and_add_it_to_list_if_stock_has_cfd_on_gerchik_and_co(
+        stock_name, list_of_interesting_stocks):
+    df_of_tickers_available_on_gerchik_and_co, list_of_tickers_available_on_gerchik_and_co =\
+        get_list_of_us_stock_tickers_from_gerchik_and_co()
+    if stock_name in list_of_tickers_available_on_gerchik_and_co:
+        stock_name_with_gerchik_and_co_mark = stock_name + "_(CFD_on_Gerchik&Co)"
+        list_of_interesting_stocks.append(stock_name_with_gerchik_and_co_mark)
+    else:
+        list_of_interesting_stocks.append(stock_name)
+    return list_of_interesting_stocks
+
+def add_gerchik_and_co_info(stock_name, df_with_level_atr_bpu_bsu_etc):
+    df_with_tickers_and_additional_info_from_gerchik_and_co,\
+                list_with_tickers_from_gerchik_and_co=\
+                get_list_of_us_stock_tickers_from_gerchik_and_co()
+    if stock_name not in list_with_tickers_from_gerchik_and_co:
+        df_with_level_atr_bpu_bsu_etc.loc[
+            0, "tradable_as_cfd_on_gerchik_and_co"] = False
+        print('added_what_is_needed1')
+
+    if stock_name in list_with_tickers_from_gerchik_and_co:
+        print('added_what_is_needed2')
+        df_with_level_atr_bpu_bsu_etc.loc[
+            0, "tradable_as_cfd_on_gerchik_and_co"] = True
+        try:
+            column_names= ["Минимальный_объем_(Лотов)",'Максимальный_объем_(Лотов)', 'Шаг_объема_(лотов)', 'Размер_тика', 'Стоимость_тика_(1_лот)',
+               'Процент_маржи', 'Swap_Long', 'Swap_Short', 'Shortable', 'Торговая_сессия', 'Комиссия_за_1_лот']
+            for column_name in column_names :
+                df_with_level_atr_bpu_bsu_etc.loc[
+                    0, column_name] = df_with_tickers_and_additional_info_from_gerchik_and_co.loc[
+                    df_with_tickers_and_additional_info_from_gerchik_and_co["ticker"]==stock_name,
+                    column_name].values[0]
+        except:
+            traceback.print_exc()
 
 def find_if_level_is_round(level):
     level = str ( level )
@@ -899,9 +934,14 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             distance_between_technical_stop_loss_and_buy_order_in_atr = \
                 round(distance_between_technical_stop_loss_and_buy_order_in_atr, 6)
 
-            list_of_stocks_which_broke_ath.append(stock_name)
-            print("list_of_stocks_which_broke_ath")
-            print(list_of_stocks_which_broke_ath)
+            # list_of_stocks_which_broke_ath.append(stock_name)
+            try:
+                #add Gerchik_and_Co mark if it is available as cfd
+                list_of_stocks_which_broke_ath=\
+                    append_gerchik_and_co_mark_to_stock_and_add_it_to_list_if_stock_has_cfd_on_gerchik_and_co(
+                    stock_name, list_of_stocks_which_broke_ath)
+            except:
+                traceback.print_exc()
 
             df_with_level_atr_bpu_bsu_etc = pd.DataFrame()
             df_with_level_atr_bpu_bsu_etc.loc[
@@ -972,7 +1012,10 @@ def search_for_tickers_with_breakout_situations(db_where_ohlcv_data_for_stocks_i
             df_with_level_atr_bpu_bsu_etc.loc[
                 0, "distance_between_technical_sl_and_buy_order_in_atr"] = distance_between_technical_stop_loss_and_buy_order_in_atr
 
-
+            try:
+                add_gerchik_and_co_info(stock_name, df_with_level_atr_bpu_bsu_etc)
+            except:
+                traceback.print_exc()
 
             df_with_level_atr_bpu_bsu_etc.to_sql(
                 table_where_ticker_which_may_have_fast_breakout_situations_from_ath_will_be,
