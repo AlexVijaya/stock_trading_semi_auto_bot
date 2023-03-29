@@ -276,10 +276,14 @@ def check_if_asset_is_approaching_its_ath(atr_over_this_period,
         last_five_years_of_data = table_with_ohlcv_data_df.tail(252 * 5)
         last_five_years_of_data_numpy_array = last_five_years_of_data.to_numpy()
         last_bar_number = last_five_years_of_data.index[-1]
-        advanced_atr = \
-            calculate_atr_without_paranormal_bars_from_numpy_array(advanced_atr_over_this_period,
-                                                                   last_five_years_of_data_numpy_array,
-                                                                   last_bar_number)
+        advanced_atr=np.nan
+        try:
+            advanced_atr = \
+                calculate_atr_without_paranormal_bars_from_numpy_array(advanced_atr_over_this_period,
+                                                                       last_five_years_of_data_numpy_array,
+                                                                       last_bar_number)
+        except:
+            continue
 
         distance_from_last_close_price_to_ath=all_time_high_in_stock-last_close_price
         if distance_from_last_close_price_to_ath<=advanced_atr*0.5:

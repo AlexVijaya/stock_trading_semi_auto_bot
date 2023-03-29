@@ -51,7 +51,9 @@ def get_file_name_for_deletion(subdirectory_name='current_rebound_breakout_and_f
     file_path = os.path.join(subdirectory_path, "stocks_" + today + '.txt')
     return file_path
 
-
+def run_upload_file_script(python_file_name_to_run):
+    interpreter = sys.executable
+    subprocess.run([interpreter, python_file_name_to_run])
 
 def run_multiple_search_current_rebound_breakout_false_breakout_situations():
     # Run the Python script and capture its output
@@ -100,7 +102,14 @@ def run_multiple_search_current_rebound_breakout_false_breakout_situations():
         # pprint.print(output)
 if __name__=="__main__":
     start_time = time.time()
+
     run_multiple_search_current_rebound_breakout_false_breakout_situations()
+
+
+    # python_file_name_to_run = "/home/alex/PycharmProjects/stock_trading_semi_auto_bot/upload_file_to_goggle_drive2.py"
+    python_file_name_to_run = "upload_file_to_goggle_drive2.py"
+    run_upload_file_script(python_file_name_to_run)
+
     end_time = time.time()
     overall_time = end_time - start_time
     print('overall time in minutes=', overall_time / 60.0)
